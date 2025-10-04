@@ -1,0 +1,62 @@
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Sparkles } from 'lucide-react';
+
+interface BranchingModalProps {
+  title: string;
+  options: Array<{
+    text: string;
+    isRecommended?: boolean;
+  }>;
+  onChoice: (choiceIndex: number) => void;
+}
+
+export const BranchingModal = ({ title, options, onChoice }: BranchingModalProps) => {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-xl animate-fade-in">
+      <Card className="w-full max-w-2xl mx-4 bg-card/95 backdrop-blur-sm border-border shadow-soft animate-scale-in">
+        <div className="p-8 space-y-6">
+          {/* Title */}
+          <div className="text-center space-y-2">
+            <h2 className="text-3xl font-bold text-foreground">{title}</h2>
+            <p className="text-muted-foreground">Choose your path</p>
+          </div>
+
+          {/* Options */}
+          <div className="space-y-4">
+            {options.map((option, idx) => (
+              <button
+                key={idx}
+                onClick={() => onChoice(idx)}
+                className={`w-full p-6 rounded-lg border-2 text-left transition-all duration-200 group ${
+                  option.isRecommended
+                    ? 'border-accent bg-accent/10 shadow-accent-glow hover:shadow-accent-glow hover:scale-[1.02]'
+                    : 'border-border bg-card/50 hover:border-primary/50 hover:bg-card hover:scale-[1.02]'
+                }`}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <span className="text-xl font-semibold block mb-2">{option.text}</span>
+                    {option.isRecommended && (
+                      <div className="flex items-center gap-2 text-accent text-sm font-medium">
+                        <Sparkles className="h-4 w-4" />
+                        <span>Recommended for you</span>
+                      </div>
+                    )}
+                  </div>
+                  <div
+                    className={`text-4xl transition-transform duration-200 group-hover:scale-110 ${
+                      option.isRecommended ? 'animate-pulse-glow' : ''
+                    }`}
+                  >
+                    →
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </Card>
+    </div>
+  );
+};
