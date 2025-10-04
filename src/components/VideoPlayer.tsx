@@ -2,29 +2,45 @@ import { useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { Play, Pause, Volume2, VolumeX, Maximize } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+/**
+ * Props for the VideoPlayer component
+ * @param src - URL of the video file to play
+ * @param onTimeUpdate - Optional callback fired when video time updates
+ * @param isBlurred - Whether to apply blur effect to the video (e.g., when showing modals)
+ */
 interface VideoPlayerProps {
   src: string;
   onTimeUpdate?: (currentTime: number) => void;
   isBlurred?: boolean;
 }
 
+/**
+ * Ref methods exposed by VideoPlayer for external control
+ */
 export interface VideoPlayerRef {
   play: () => void;
   pause: () => void;
   getCurrentTime: () => number;
 }
 
+/**
+ * VideoPlayer Component
+ * Full-screen video player with custom controls and blur effects
+ * Supports play/pause, mute/unmute, fullscreen, and external control via ref
+ */
 export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
   ({ src, onTimeUpdate, isBlurred = false }, ref) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
 
+    // Expose play, pause, and getCurrentTime methods to parent components
     useImperativeHandle(ref, () => ({
       play: () => videoRef.current?.play(),
       pause: () => videoRef.current?.pause(),
       getCurrentTime: () => videoRef.current?.currentTime || 0,
     }));
 
+    // Listen to video timeupdate events and notify parent component
     useEffect(() => {
       const video = videoRef.current;
       if (!video) return;
@@ -39,6 +55,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       return () => video.removeEventListener('timeupdate', handleTimeUpdate);
     }, [onTimeUpdate]);
 
+    // Toggle play/pause state of the video
     const togglePlay = () => {
       if (videoRef.current) {
         if (videoRef.current.paused) {
@@ -49,12 +66,14 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       }
     };
 
+    // Toggle mute/unmute state of the video
     const toggleMute = () => {
       if (videoRef.current) {
         videoRef.current.muted = !videoRef.current.muted;
       }
     };
 
+    // Toggle fullscreen mode for the video container
     const toggleFullscreen = () => {
       if (containerRef.current) {
         if (!document.fullscreenElement) {

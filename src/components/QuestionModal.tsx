@@ -3,6 +3,14 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { CheckCircle2 } from 'lucide-react';
 
+/**
+ * Props for the QuestionModal component
+ * @param question - The question text to display
+ * @param options - Array of answer options for the user to choose from
+ * @param currentQuestion - Current question number (1-indexed)
+ * @param totalQuestions - Total number of questions in the sequence
+ * @param onAnswer - Callback fired when user submits an answer
+ */
 interface QuestionModalProps {
   question: string;
   options: string[];
@@ -11,6 +19,11 @@ interface QuestionModalProps {
   onAnswer: (answer: string) => void;
 }
 
+/**
+ * QuestionModal Component
+ * Displays personality assessment questions over a blurred video background
+ * Shows progress dots, question text, answer options, and a submit button
+ */
 export const QuestionModal = ({
   question,
   options,
@@ -18,8 +31,10 @@ export const QuestionModal = ({
   totalQuestions,
   onAnswer,
 }: QuestionModalProps) => {
+  // Track which option the user has selected
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
+  // Submit the selected answer and reset selection for next question
   const handleSubmit = () => {
     if (selectedOption) {
       onAnswer(selectedOption);

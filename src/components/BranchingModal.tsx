@@ -2,6 +2,12 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Sparkles } from 'lucide-react';
 
+/**
+ * Props for the BranchingModal component
+ * @param title - The branching decision title/prompt
+ * @param options - Array of choice options, with optional isRecommended flag
+ * @param onChoice - Callback fired when user selects a choice (passes index)
+ */
 interface BranchingModalProps {
   title: string;
   options: Array<{
@@ -11,6 +17,11 @@ interface BranchingModalProps {
   onChoice: (choiceIndex: number) => void;
 }
 
+/**
+ * BranchingModal Component
+ * Displays story branching choices over a blurred video background
+ * Highlights recommended options based on user's personality profile
+ */
 export const BranchingModal = ({ title, options, onChoice }: BranchingModalProps) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-xl animate-fade-in">

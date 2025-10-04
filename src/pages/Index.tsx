@@ -3,6 +3,13 @@ import { VideoPlayer, VideoPlayerRef } from '@/components/VideoPlayer';
 import { QuestionModal } from '@/components/QuestionModal';
 import { BranchingModal } from '@/components/BranchingModal';
 
+/**
+ * Personality question shown at the start of the video
+ * @param id - Unique identifier for the question
+ * @param time - Video timestamp (in seconds) when question should appear
+ * @param question - The question text
+ * @param options - Array of answer options
+ */
 interface PersonalityQuestion {
   id: number;
   time: number;
@@ -10,6 +17,13 @@ interface PersonalityQuestion {
   options: string[];
 }
 
+/**
+ * Branching story choice shown later in the video
+ * @param id - Unique identifier for the choice
+ * @param time - Video timestamp (in seconds) when choice should appear
+ * @param title - The decision prompt title
+ * @param options - Array of choice options with optional recommendation flags
+ */
 interface BranchingChoice {
   id: number;
   time: number;
@@ -20,14 +34,30 @@ interface BranchingChoice {
   }>;
 }
 
+/**
+ * Index Page Component
+ * Main application page that orchestrates the interactive video experience
+ * Manages personality questions, branching choices, and video playback
+ */
 const Index = () => {
+  // Ref to control video playback programmatically
   const videoRef = useRef<VideoPlayerRef>(null);
+  
+  // Current video playback time in seconds
   const [currentTime, setCurrentTime] = useState(0);
+  
+  // UI state for showing modals
   const [showQuestion, setShowQuestion] = useState(false);
   const [showBranching, setShowBranching] = useState(false);
+  
+  // Track which question/branch is currently displayed
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [currentBranchingIndex, setCurrentBranchingIndex] = useState(0);
+  
+  // Store user's personality answers for personalized recommendations
   const [personalityAnswers, setPersonalityAnswers] = useState<string[]>([]);
+  
+  // Track which questions/branches have already been shown (by ID)
   const [askedQuestions, setAskedQuestions] = useState<Set<number>>(new Set());
   const [askedBranches, setAskedBranches] = useState<Set<number>>(new Set());
 
@@ -80,10 +110,15 @@ const Index = () => {
     },
   ];
 
+  /**
+   * Handle video time updates
+   * Check if we've reached a timestamp for a personality question or branching choice
+   * Pause video and show appropriate modal when triggered
+   */
   const handleTimeUpdate = (time: number) => {
     setCurrentTime(time);
 
-    // Check for personality questions
+    // Check for personality questions (shown at the start)
     const nextQuestion = personalityQuestions.find(
       (q) => !askedQuestions.has(q.id) && time >= q.time && time < q.time + 0.5
     );
@@ -95,7 +130,7 @@ const Index = () => {
       setAskedQuestions((prev) => new Set(prev).add(nextQuestion.id));
     }
 
-    // Check for branching choices (only after all personality questions)
+    // Check for branching choices (only after all personality questions are answered)
     if (personalityAnswers.length === personalityQuestions.length) {
       const nextBranch = branchingChoices.find(
         (b) => !askedBranches.has(b.id) && time >= b.time && time < b.time + 0.5
@@ -110,6 +145,10 @@ const Index = () => {
     }
   };
 
+  /**
+   * Handle personality question answer submission
+   * Store answer, close modal, and resume video playback
+   */
   const handleAnswer = (answer: string) => {
     setPersonalityAnswers([...personalityAnswers, answer]);
     setShowQuestion(false);
@@ -118,8 +157,13 @@ const Index = () => {
     }, 300);
   };
 
+  /**
+   * Handle branching choice selection
+   * Log choice (or implement custom branching logic), close modal, and resume video
+   */
   const handleBranchChoice = (choiceIndex: number) => {
     console.log('Branch chosen:', choiceIndex);
+    // TODO: Implement branching logic here (e.g., jump to different video segments)
     setShowBranching(false);
     setTimeout(() => {
       videoRef.current?.play();
