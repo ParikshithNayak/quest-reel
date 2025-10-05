@@ -6,11 +6,13 @@ import { Button } from '@/components/ui/button';
  * Props for the VideoPlayer component
  * @param src - URL of the video file to play
  * @param onTimeUpdate - Optional callback fired when video time updates
+ * @param onVideoEnded - Optional callback fired when video playback ends
  * @param isBlurred - Whether to apply blur effect to the video (e.g., when showing modals)
  */
 interface VideoPlayerProps {
   src: string;
   onTimeUpdate?: (currentTime: number) => void;
+  onVideoEnded?: () => void;
   isBlurred?: boolean;
 }
 
@@ -30,7 +32,7 @@ export interface VideoPlayerRef {
  * Supports play/pause, mute/unmute, fullscreen, and external control via ref
  */
 export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
-  ({ src, onTimeUpdate, isBlurred = false }, ref) => {
+  ({ src, onTimeUpdate, onVideoEnded, isBlurred = false }, ref) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -60,6 +62,21 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       video.addEventListener('timeupdate', handleTimeUpdate);
       return () => video.removeEventListener('timeupdate', handleTimeUpdate);
     }, [onTimeUpdate]);
+
+    // Listen to video ended event and notify parent component
+    useEffect(() => {
+      const video = videoRef.current;
+      if (!video) return;
+
+      const handleEnded = () => {
+        if (onVideoEnded) {
+          onVideoEnded();
+        }
+      };
+
+      video.addEventListener('ended', handleEnded);
+      return () => video.removeEventListener('ended', handleEnded);
+    }, [onVideoEnded]);
 
     // Toggle play/pause state of the video
     const togglePlay = () => {

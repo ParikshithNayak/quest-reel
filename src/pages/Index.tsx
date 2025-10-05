@@ -48,6 +48,12 @@ const Index = () => {
   // Current video playback time in seconds
   const [currentTime, setCurrentTime] = useState(0);
   
+  // Cumulative time across all videos watched (for branching triggers)
+  const [cumulativeTime, setCumulativeTime] = useState(0);
+  
+  // Video history stack - stores previous videos to return to after branches
+  const [videoStack, setVideoStack] = useState<Array<{ url: string; timestamp: number; cumulativeTime: number }>>([]);
+  
   // UI state for showing modals
   const [showQuestion, setShowQuestion] = useState(false);
   const [showBranching, setShowBranching] = useState(false);
@@ -145,12 +151,19 @@ const Index = () => {
   /**
    * Handle video time updates
    * Check if we've reached a timestamp for a personality question or branching choice
+   * Uses cumulative time for branching checks
    * Pause video and show appropriate modal when triggered
    */
   const handleTimeUpdate = (time: number) => {
     setCurrentTime(time);
+    
+    // Update cumulative time based on current video playback
+    const newCumulativeTime = videoStack.length > 0 
+      ? videoStack[videoStack.length - 1].cumulativeTime + time
+      : time;
+    setCumulativeTime(newCumulativeTime);
 
-    // Check for personality questions (shown at the start)
+    // Check for personality questions (shown at the start, based on actual video time)
     const nextQuestion = personalityQuestions.find(
       (q) => !askedQuestions.has(q.id) && time >= q.time && time < q.time + 0.5
     );
@@ -162,10 +175,10 @@ const Index = () => {
       setAskedQuestions((prev) => new Set(prev).add(nextQuestion.id));
     }
 
-    // Check for branching choices (only after all personality questions are answered)
+    // Check for branching choices using cumulative time (only after all personality questions are answered)
     if (personalityAnswers.length === personalityQuestions.length) {
       const nextBranch = branchingChoices.find(
-        (b) => !askedBranches.has(b.id) && time >= b.time && time < b.time + 0.5
+        (b) => !askedBranches.has(b.id) && newCumulativeTime >= b.time && newCumulativeTime < b.time + 0.5
       );
 
       if (nextBranch && !showQuestion && !showBranching) {
@@ -191,33 +204,57 @@ const Index = () => {
 
   /**
    * Handle branching choice selection
-   * Switch to the selected video branch and reset timing for the new video
+   * Push current video state to stack, switch to branch video
    */
   const handleBranchChoice = (choiceIndex: number) => {
     const selectedOption = branchingChoices[currentBranchingIndex].options[choiceIndex];
     
-    // Switch to the new video URL
+    // Save current video state to stack before branching
+    setVideoStack((prev) => [
+      ...prev,
+      {
+        url: videoUrl,
+        timestamp: currentTime,
+        cumulativeTime: cumulativeTime,
+      },
+    ]);
+    
+    // Switch to the new branch video
     setVideoUrl(selectedOption.videoUrl);
-    
-    // Reset current time to the start time of the new video
     setCurrentTime(selectedOption.startTime || 0);
-    
-    // Clear previously asked branches since we're on a new video path
-    setAskedBranches(new Set());
     
     setShowBranching(false);
     
     // Resume playback after a short delay
     setTimeout(() => {
-      // Seek to the start time if specified
       if (selectedOption.startTime && videoRef.current) {
-        const video = videoRef.current as any;
-        if (video.seekTo) {
-          video.seekTo(selectedOption.startTime);
-        }
+        videoRef.current.seekTo(selectedOption.startTime);
       }
       videoRef.current?.play();
     }, 300);
+  };
+
+  /**
+   * Handle video end event
+   * When a branch video ends, return to the previous video in the stack
+   */
+  const handleVideoEnded = () => {
+    if (videoStack.length > 0) {
+      // Pop the last video from the stack
+      const previousVideo = videoStack[videoStack.length - 1];
+      setVideoStack((prev) => prev.slice(0, -1));
+      
+      // Restore the previous video
+      setVideoUrl(previousVideo.url);
+      setCurrentTime(previousVideo.timestamp);
+      setCumulativeTime(previousVideo.cumulativeTime);
+      
+      // Resume playback from where we left off
+      setTimeout(() => {
+        videoRef.current?.seekTo(previousVideo.timestamp);
+        videoRef.current?.play();
+      }, 100);
+    }
   };
 
   return (
@@ -226,6 +263,7 @@ const Index = () => {
         ref={videoRef}
         src={videoUrl}
         onTimeUpdate={handleTimeUpdate}
+        onVideoEnded={handleVideoEnded}
         isBlurred={showQuestion || showBranching}
       />
 
