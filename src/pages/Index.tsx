@@ -22,7 +22,7 @@ interface PersonalityQuestion {
  * @param id - Unique identifier for the choice
  * @param time - Video timestamp (in seconds) when choice should appear
  * @param title - The decision prompt title
- * @param options - Array of choice options with optional recommendation flags
+ * @param options - Array of choice options with optional recommendation flags and video URLs
  */
 interface BranchingChoice {
   id: number;
@@ -31,6 +31,8 @@ interface BranchingChoice {
   options: Array<{
     text: string;
     isRecommended?: boolean;
+    videoUrl: string;
+    startTime?: number; // Optional: start the new video at a specific time
   }>;
 }
 
@@ -61,8 +63,8 @@ const Index = () => {
   const [askedQuestions, setAskedQuestions] = useState<Set<number>>(new Set());
   const [askedBranches, setAskedBranches] = useState<Set<number>>(new Set());
 
-  // Demo video - replace with your actual video URL
-  const videoUrl = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
+  // Current video URL - changes based on branching choices
+  const [videoUrl, setVideoUrl] = useState('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4');
 
   // Personality questions at the start (customize these)
   const personalityQuestions: PersonalityQuestion[] = [
@@ -86,16 +88,31 @@ const Index = () => {
     },
   ];
 
-  // Branching choices later in the video (customize these)
+  // Branching choices later in the video (customize these with your video URLs)
   const branchingChoices: BranchingChoice[] = [
     {
       id: 1,
       time: 15,
       title: 'A mysterious figure approaches...',
       options: [
-        { text: 'Confront them directly', isRecommended: personalityAnswers[0] === 'Action and courage' },
-        { text: 'Observe from a distance', isRecommended: personalityAnswers[0] === 'Patience and planning' },
-        { text: 'Try to communicate peacefully', isRecommended: personalityAnswers[0] === 'Intuition and emotion' },
+        { 
+          text: 'Confront them directly', 
+          isRecommended: personalityAnswers[0] === 'Action and courage',
+          videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+          startTime: 0
+        },
+        { 
+          text: 'Observe from a distance', 
+          isRecommended: personalityAnswers[0] === 'Patience and planning',
+          videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+          startTime: 0
+        },
+        { 
+          text: 'Try to communicate peacefully', 
+          isRecommended: personalityAnswers[0] === 'Intuition and emotion',
+          videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+          startTime: 0
+        },
       ],
     },
     {
@@ -103,9 +120,24 @@ const Index = () => {
       time: 25,
       title: 'You discover a hidden path...',
       options: [
-        { text: 'Take the risky shortcut', isRecommended: personalityAnswers[1] === 'Head-on with confidence' },
-        { text: 'Stick to the known route', isRecommended: personalityAnswers[1] === 'Carefully with analysis' },
-        { text: 'Explore both options', isRecommended: personalityAnswers[1] === 'Creatively with flexibility' },
+        { 
+          text: 'Take the risky shortcut', 
+          isRecommended: personalityAnswers[1] === 'Head-on with confidence',
+          videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
+          startTime: 0
+        },
+        { 
+          text: 'Stick to the known route', 
+          isRecommended: personalityAnswers[1] === 'Carefully with analysis',
+          videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
+          startTime: 0
+        },
+        { 
+          text: 'Explore both options', 
+          isRecommended: personalityAnswers[1] === 'Creatively with flexibility',
+          videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
+          startTime: 0
+        },
       ],
     },
   ];
@@ -159,13 +191,31 @@ const Index = () => {
 
   /**
    * Handle branching choice selection
-   * Log choice (or implement custom branching logic), close modal, and resume video
+   * Switch to the selected video branch and reset timing for the new video
    */
   const handleBranchChoice = (choiceIndex: number) => {
-    console.log('Branch chosen:', choiceIndex);
-    // TODO: Implement branching logic here (e.g., jump to different video segments)
+    const selectedOption = branchingChoices[currentBranchingIndex].options[choiceIndex];
+    
+    // Switch to the new video URL
+    setVideoUrl(selectedOption.videoUrl);
+    
+    // Reset current time to the start time of the new video
+    setCurrentTime(selectedOption.startTime || 0);
+    
+    // Clear previously asked branches since we're on a new video path
+    setAskedBranches(new Set());
+    
     setShowBranching(false);
+    
+    // Resume playback after a short delay
     setTimeout(() => {
+      // Seek to the start time if specified
+      if (selectedOption.startTime && videoRef.current) {
+        const video = videoRef.current as any;
+        if (video.seekTo) {
+          video.seekTo(selectedOption.startTime);
+        }
+      }
       videoRef.current?.play();
     }, 300);
   };

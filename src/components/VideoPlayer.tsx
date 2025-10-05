@@ -21,6 +21,7 @@ export interface VideoPlayerRef {
   play: () => void;
   pause: () => void;
   getCurrentTime: () => number;
+  seekTo: (time: number) => void;
 }
 
 /**
@@ -33,11 +34,16 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
     const videoRef = useRef<HTMLVideoElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
 
-    // Expose play, pause, and getCurrentTime methods to parent components
+    // Expose play, pause, getCurrentTime, and seekTo methods to parent components
     useImperativeHandle(ref, () => ({
       play: () => videoRef.current?.play(),
       pause: () => videoRef.current?.pause(),
       getCurrentTime: () => videoRef.current?.currentTime || 0,
+      seekTo: (time: number) => {
+        if (videoRef.current) {
+          videoRef.current.currentTime = time;
+        }
+      },
     }));
 
     // Listen to video timeupdate events and notify parent component
