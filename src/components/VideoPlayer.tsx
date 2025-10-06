@@ -1,4 +1,4 @@
-import { useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
+import { useRef, useEffect, forwardRef, useImperativeHandle, useState } from 'react';
 import { Play, Pause, Volume2, VolumeX, Maximize } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -35,6 +35,8 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
   ({ src, onTimeUpdate, onVideoEnded, isBlurred = false }, ref) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [isMuted, setIsMuted] = useState(false);
 
     // Expose play, pause, getCurrentTime, and seekTo methods to parent components
     useImperativeHandle(ref, () => ({
@@ -77,6 +79,34 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       video.addEventListener('ended', handleEnded);
       return () => video.removeEventListener('ended', handleEnded);
     }, [onVideoEnded]);
+
+    // Track play/pause state
+    useEffect(() => {
+      const video = videoRef.current;
+      if (!video) return;
+
+      const handlePlay = () => setIsPlaying(true);
+      const handlePause = () => setIsPlaying(false);
+
+      video.addEventListener('play', handlePlay);
+      video.addEventListener('pause', handlePause);
+      
+      return () => {
+        video.removeEventListener('play', handlePlay);
+        video.removeEventListener('pause', handlePause);
+      };
+    }, []);
+
+    // Track mute state
+    useEffect(() => {
+      const video = videoRef.current;
+      if (!video) return;
+
+      const handleVolumeChange = () => setIsMuted(video.muted);
+
+      video.addEventListener('volumechange', handleVolumeChange);
+      return () => video.removeEventListener('volumechange', handleVolumeChange);
+    }, []);
 
     // Toggle play/pause state of the video
     const togglePlay = () => {
@@ -130,7 +160,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
               onClick={togglePlay}
               className="bg-card/80 backdrop-blur-sm hover:bg-card border-border shadow-soft"
             >
-              <Play className="h-5 w-5" />
+              {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
             </Button>
             <Button
               variant="secondary"
@@ -138,7 +168,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
               onClick={toggleMute}
               className="bg-card/80 backdrop-blur-sm hover:bg-card border-border shadow-soft"
             >
-              <Volume2 className="h-5 w-5" />
+              {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
             </Button>
           </div>
           <Button
