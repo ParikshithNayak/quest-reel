@@ -237,21 +237,28 @@ const Index = () => {
   /**
    * Handle video end event
    * When a branch video ends, return to the previous video in the stack
+   * Resume at a calculated time based on branch video duration for story continuity
    */
   const handleVideoEnded = () => {
     if (videoStack.length > 0) {
+      // Get the duration of the branch video that just ended
+      const branchVideoDuration = currentTime;
+      
       // Pop the last video from the stack
       const previousVideo = videoStack[videoStack.length - 1];
       setVideoStack((prev) => prev.slice(0, -1));
       
+      // Calculate the new resume time: where we left off + branch video duration
+      const resumeTime = previousVideo.timestamp + branchVideoDuration;
+      
       // Restore the previous video
       setVideoUrl(previousVideo.url);
-      setCurrentTime(previousVideo.timestamp);
-      setCumulativeTime(previousVideo.cumulativeTime);
+      setCurrentTime(resumeTime);
+      setCumulativeTime(previousVideo.cumulativeTime + branchVideoDuration);
       
-      // Resume playback from where we left off
+      // Resume playback from the calculated time
       setTimeout(() => {
-        videoRef.current?.seekTo(previousVideo.timestamp);
+        videoRef.current?.seekTo(resumeTime);
         videoRef.current?.play();
       }, 100);
     }
