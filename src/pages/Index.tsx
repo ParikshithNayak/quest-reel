@@ -1,7 +1,7 @@
-import { useState, useRef } from 'react';
-import { VideoPlayer, VideoPlayerRef } from '@/components/VideoPlayer';
-import { QuestionModal } from '@/components/QuestionModal';
-import { BranchingModal } from '@/components/BranchingModal';
+import { useState, useRef } from "react";
+import { VideoPlayer, VideoPlayerRef } from "@/components/VideoPlayer";
+import { QuestionModal } from "@/components/QuestionModal";
+import { BranchingModal } from "@/components/BranchingModal";
 
 /**
  * Personality question shown at the start of the video
@@ -45,54 +45,58 @@ interface BranchingChoice {
 const Index = () => {
   // Ref to control video playback programmatically
   const videoRef = useRef<VideoPlayerRef>(null);
-  
+
   // Current video playback time in seconds
   const [currentTime, setCurrentTime] = useState(0);
-  
+
   // Cumulative time across all videos watched (for branching triggers)
   const [cumulativeTime, setCumulativeTime] = useState(0);
-  
+
   // Video history stack - stores previous videos to return to after branches
-  const [videoStack, setVideoStack] = useState<Array<{ url: string; timestamp: number; cumulativeTime: number }>>([]);
-  
+  const [videoStack, setVideoStack] = useState<
+    Array<{ url: string; timestamp: number; cumulativeTime: number }>
+  >([]);
+
   // UI state for showing modals
   const [showQuestion, setShowQuestion] = useState(false);
   const [showBranching, setShowBranching] = useState(false);
-  
+
   // Track which question/branch is currently displayed
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [currentBranchingIndex, setCurrentBranchingIndex] = useState(0);
-  const [currentBranchingChoice, setCurrentBranchingChoice] = useState<number | null>(null);
-  
+  const [currentBranchingChoice, setCurrentBranchingChoice] = useState<
+    number | null
+  >(null);
+
   // Store user's personality answers for personalized recommendations
   const [personalityAnswers, setPersonalityAnswers] = useState<string[]>([]);
-  
+
   // Track which questions/branches have already been shown (by ID)
   const [askedQuestions, setAskedQuestions] = useState<Set<number>>(new Set());
   const [askedBranches, setAskedBranches] = useState<Set<number>>(new Set());
 
   // Current video URL - changes based on branching choices
-  const [videoUrl, setVideoUrl] = useState('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4');
+  const [videoUrl, setVideoUrl] = useState("public/videos/spiderman_1080.mp4");
 
   // Personality questions at the start (customize these)
   const personalityQuestions: PersonalityQuestion[] = [
     {
       id: 1,
-      time: 2,
-      question: 'What drives you in difficult situations?',
-      options: ['Logic and strategy', 'Intuition and emotion', 'Action and courage', 'Patience and planning'],
+      time: 0,
+      question: "What are your top 2 most preferred genres for movies?",
+      options: ["Action", "Comedy", "Romance", "Thriller", "Horror"],
     },
     {
       id: 2,
-      time: 5,
-      question: 'How do you approach new challenges?',
-      options: ['Head-on with confidence', 'Carefully with analysis', 'Creatively with flexibility', 'Collaboratively with others'],
-    },
-    {
-      id: 3,
-      time: 8,
-      question: 'What matters most to you?',
-      options: ['Truth and justice', 'Freedom and adventure', 'Harmony and peace', 'Knowledge and wisdom'],
+      time: 10,
+      question: "What would you do if you were to be in Miles' position?",
+      options: [
+        "Try to think out of the box with a more creative soultion to cope with stress and anxiety",
+        "Try to organize my thoughts & take control of your responsibilities",
+        "Try to seek help from friends & family",
+        "Try to just go with the flow, attributing it to fate",
+        "Get bogged down and go into your shell",
+      ],
     },
   ];
 
@@ -100,60 +104,81 @@ const Index = () => {
   const branchingChoices: BranchingChoice[] = [
     {
       id: 1,
-      time: 15,
-      title: 'A mysterious figure approaches...',
+      time: 19,
+      title: " What should he focus on?",
       options: [
-        { 
-          text: 'Confront them directly', 
-          isRecommended: personalityAnswers[0] === 'Action and courage',
-          videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+        {
+          text: "I am liking it... let's continue!",
+          isRecommended: personalityAnswers[0] === "Action and courage",
+          videoUrl: "public/videos/PP1A-Negative.mp4",
           startTime: 0,
-          returnTime: 20 // Resume main video at 20 seconds
+          returnTime: 30, // Resume main video at 20 seconds
         },
-        { 
-          text: 'Observe from a distance', 
-          isRecommended: personalityAnswers[0] === 'Patience and planning',
-          videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+        {
+          text: "It's sad, shift towards brighter thoughts",
+          isRecommended: personalityAnswers[0] === "Patience and planning",
+          videoUrl: "public/videos/PP1B-Positive.mp4",
           startTime: 0,
-          returnTime: 20
-        },
-        { 
-          text: 'Try to communicate peacefully', 
-          isRecommended: personalityAnswers[0] === 'Intuition and emotion',
-          videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
-          startTime: 0,
-          returnTime: 20
+          returnTime: 29,
         },
       ],
     },
     {
       id: 2,
-      time: 25,
-      title: 'You discover a hidden path...',
+      time: 50,
+      title: "Pick your vibe...",
       options: [
-        { 
-          text: 'Take the risky shortcut', 
-          isRecommended: personalityAnswers[1] === 'Head-on with confidence',
-          videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
+        {
+          text: "Am I Dreaming (Slow / Melancholic)",
+          isRecommended: personalityAnswers[0] === "Action and courage",
+          videoUrl: "public/videos/Am_I_Dreaming.mp4",
           startTime: 0,
-          returnTime: 30 // Resume main video at 30 seconds
+          returnTime: 65, // Resume main video at 20 seconds
         },
-        { 
-          text: 'Stick to the known route', 
-          isRecommended: personalityAnswers[1] === 'Carefully with analysis',
-          videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
+        {
+          text: "Sunflower (Melodic Hip-Hop)",
+          isRecommended: personalityAnswers[0] === "Patience and planning",
+          videoUrl: "public/videos/Sunflower_BalanceAndReflective.mp4",
           startTime: 0,
-          returnTime: 30
+          returnTime: 65,
         },
-        { 
-          text: 'Explore both options', 
-          isRecommended: personalityAnswers[1] === 'Creatively with flexibility',
-          videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
+        {
+          text: "What’s Up Danger (Calm / Lo-Fi Version)",
+          isRecommended: personalityAnswers[0] === "Patience and planning",
+          videoUrl: "public/videos/WhatsUpDangerLoFiBeatVersion.mp4",
           startTime: 0,
-          returnTime: 30
+          returnTime: 65,
         },
       ],
     },
+    // {
+    //   id: 2,
+    //   time: 25,
+    //   title: 'You discover a hidden path...',
+    //   options: [
+    //     {
+    //       text: 'Take the risky shortcut',
+    //       isRecommended: personalityAnswers[1] === 'Head-on with confidence',
+    //       videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
+    //       startTime: 0,
+    //       returnTime: 30 // Resume main video at 30 seconds
+    //     },
+    //     {
+    //       text: 'Stick to the known route',
+    //       isRecommended: personalityAnswers[1] === 'Carefully with analysis',
+    //       videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
+    //       startTime: 0,
+    //       returnTime: 30
+    //     },
+    //     {
+    //       text: 'Explore both options',
+    //       isRecommended: personalityAnswers[1] === 'Creatively with flexibility',
+    //       videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
+    //       startTime: 0,
+    //       returnTime: 30
+    //     },
+    //   ],
+    // },
   ];
 
   /**
@@ -164,18 +189,20 @@ const Index = () => {
    */
   const handleTimeUpdate = (time: number) => {
     setCurrentTime(time);
-    
+
     // Update cumulative time based on current video playback
-    const newCumulativeTime = videoStack.length > 0 
-      ? videoStack[videoStack.length - 1].cumulativeTime + time
-      : time;
+    const newCumulativeTime =
+      videoStack.length > 0
+        ? videoStack[videoStack.length - 1].cumulativeTime + time
+        : time;
     setCumulativeTime(newCumulativeTime);
 
     // Only check for questions/branches if we're on the main video (not in a branch)
     if (videoStack.length === 0) {
       // Check for personality questions (shown at the start, based on actual video time)
       const nextQuestion = personalityQuestions.find(
-        (q) => !askedQuestions.has(q.id) && time >= q.time && time < q.time + 0.5
+        (q) =>
+          !askedQuestions.has(q.id) && time >= q.time && time < q.time + 0.5
       );
 
       if (nextQuestion && !showQuestion && !showBranching) {
@@ -188,7 +215,8 @@ const Index = () => {
       // Check for branching choices based on main video time (only after all personality questions are answered)
       if (personalityAnswers.length === personalityQuestions.length) {
         const nextBranch = branchingChoices.find(
-          (b) => !askedBranches.has(b.id) && time >= b.time && time < b.time + 0.5
+          (b) =>
+            !askedBranches.has(b.id) && time >= b.time && time < b.time + 0.5
         );
 
         if (nextBranch && !showQuestion && !showBranching) {
@@ -218,8 +246,9 @@ const Index = () => {
    * Push current video state to stack, switch to branch video
    */
   const handleBranchChoice = (choiceIndex: number) => {
-    const selectedOption = branchingChoices[currentBranchingIndex].options[choiceIndex];
-    
+    const selectedOption =
+      branchingChoices[currentBranchingIndex].options[choiceIndex];
+
     // Save current video state to stack before branching
     setVideoStack((prev) => [
       ...prev,
@@ -229,16 +258,16 @@ const Index = () => {
         cumulativeTime: cumulativeTime,
       },
     ]);
-    
+
     // Store the choice index to use the returnTime later
     setCurrentBranchingChoice(choiceIndex);
-    
+
     // Switch to the new branch video
     setVideoUrl(selectedOption.videoUrl);
     setCurrentTime(selectedOption.startTime || 0);
-    
+
     setShowBranching(false);
-    
+
     // Resume playback after a short delay
     setTimeout(() => {
       if (selectedOption.startTime && videoRef.current) {
@@ -256,23 +285,24 @@ const Index = () => {
     if (videoStack.length > 0 && currentBranchingChoice !== null) {
       // Get the branch video duration for cumulative time tracking
       const branchVideoDuration = currentTime;
-      
+
       // Pop the last video from the stack
       const previousVideo = videoStack[videoStack.length - 1];
       setVideoStack((prev) => prev.slice(0, -1));
-      
+
       // Get the developer-specified return time for this branch
-      const selectedOption = branchingChoices[currentBranchingIndex].options[currentBranchingChoice];
+      const selectedOption =
+        branchingChoices[currentBranchingIndex].options[currentBranchingChoice];
       const resumeTime = selectedOption.returnTime;
-      
+
       // Restore the previous video
       setVideoUrl(previousVideo.url);
       setCurrentTime(resumeTime);
       setCumulativeTime(previousVideo.cumulativeTime + branchVideoDuration);
-      
+
       // Reset the branch choice tracker
       setCurrentBranchingChoice(null);
-      
+
       // Resume playback from the specified return time
       setTimeout(() => {
         videoRef.current?.seekTo(resumeTime);
