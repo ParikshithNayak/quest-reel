@@ -72,14 +72,16 @@ const Index = () => {
   >(null);
 
   // Store user's personality answers for personalized recommendations
-  const [personalityAnswers, setPersonalityAnswers] = useState<Array<string | string[]>>([]);
+  const [personalityAnswers, setPersonalityAnswers] = useState<
+    Array<string | string[]>
+  >([]);
 
   // Track which questions/branches have already been shown (by ID)
   const [askedQuestions, setAskedQuestions] = useState<Set<number>>(new Set());
   const [askedBranches, setAskedBranches] = useState<Set<number>>(new Set());
 
   // Current video URL - changes based on branching choices
-  const [videoUrl, setVideoUrl] = useState("public/videos/spiderman_1080.mp4");
+  const [videoUrl, setVideoUrl] = useState("/videos/spiderman_1080.mp4");
 
   // Personality questions at the start (customize these)
   const personalityQuestions: PersonalityQuestion[] = [
@@ -113,14 +115,14 @@ const Index = () => {
       options: [
         {
           text: "I am liking it... let's continue!",
-          videoUrl: "public/videos/PP1A-Negative.mp4",
+          videoUrl: "/videos/PP1A-Negative.mp4",
           startTime: 0,
           returnTime: 30,
           tags: ["Director's Choice"],
         },
         {
           text: "It's sad, shift towards brighter thoughts",
-          videoUrl: "public/videos/PP1B-Positive.mp4",
+          videoUrl: "/videos/PP1B-Positive.mp4",
           startTime: 0,
           returnTime: 29,
           tags: ["Recommended"],
@@ -135,21 +137,21 @@ const Index = () => {
         {
           text: "Am I Dreaming (Slow / Melancholic)",
           isRecommended: personalityAnswers[0] === "Action and courage",
-          videoUrl: "public/videos/Am_I_Dreaming.mp4",
+          videoUrl: "/videos/Am_I_Dreaming.mp4",
           startTime: 0,
           returnTime: 65, // Resume main video at 20 seconds
         },
         {
           text: "Sunflower (Melodic Hip-Hop)",
           isRecommended: personalityAnswers[0] === "Patience and planning",
-          videoUrl: "public/videos/Sunflower_BalanceAndReflective.mp4",
+          videoUrl: "/videos/Sunflower_BalanceAndReflective.mp4",
           startTime: 0,
           returnTime: 65,
         },
         {
           text: "What’s Up Danger (Calm / Lo-Fi Version)",
           isRecommended: personalityAnswers[0] === "Patience and planning",
-          videoUrl: "public/videos/WhatsUpDangerLoFiBeatVersion.mp4",
+          videoUrl: "/videos/WhatsUpDangerLoFiBeatVersion.mp4",
           startTime: 0,
           returnTime: 65,
         },
@@ -220,8 +222,8 @@ const Index = () => {
       if (personalityAnswers.length === personalityQuestions.length) {
         const nextBranch = branchingChoices.find(
           (b) =>
-            !askedBranches.has(b.id) && 
-            time >= b.time && 
+            !askedBranches.has(b.id) &&
+            time >= b.time &&
             time < b.time + 0.5 &&
             (!b.condition || b.condition(personalityAnswers))
         );
@@ -258,7 +260,8 @@ const Index = () => {
       branchingChoices[currentBranchingIndex].options[choiceIndex];
 
     // Check if this is a Director's Choice (continue main video)
-    const isDirectorsChoice = selectedOption.tags?.includes("Director's Choice");
+    const isDirectorsChoice =
+      selectedOption.tags?.includes("Director's Choice");
 
     if (isDirectorsChoice) {
       // Just close the modal and continue playing the main video
@@ -339,7 +342,10 @@ const Index = () => {
         onTimeUpdate={handleTimeUpdate}
         onVideoEnded={handleVideoEnded}
         isBlurred={showQuestion || showBranching}
-        allowSeeking={personalityAnswers.length === personalityQuestions.length && videoStack.length === 0}
+        allowSeeking={
+          personalityAnswers.length === personalityQuestions.length &&
+          videoStack.length === 0
+        }
       />
 
       {showQuestion && (
@@ -349,7 +355,9 @@ const Index = () => {
           currentQuestion={currentQuestionIndex + 1}
           totalQuestions={personalityQuestions.length}
           onAnswer={handleAnswer}
-          allowMultiple={personalityQuestions[currentQuestionIndex].allowMultiple}
+          allowMultiple={
+            personalityQuestions[currentQuestionIndex].allowMultiple
+          }
         />
       )}
 
