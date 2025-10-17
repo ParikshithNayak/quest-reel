@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Sparkles } from 'lucide-react';
 
 /**
@@ -13,6 +14,7 @@ interface BranchingModalProps {
   options: Array<{
     text: string;
     isRecommended?: boolean;
+    tags?: string[];
   }>;
   onChoice: (choiceIndex: number) => void;
 }
@@ -46,12 +48,25 @@ export const BranchingModal = ({ title, options, onChoice }: BranchingModalProps
                 }`}
               >
                 <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <span className="text-xl font-semibold block mb-2">{option.text}</span>
+                  <div className="flex-1 space-y-3">
+                    <span className="text-xl font-semibold block">{option.text}</span>
                     {option.isRecommended && (
                       <div className="flex items-center gap-2 text-accent text-sm font-medium">
                         <Sparkles className="h-4 w-4" />
                         <span>Recommended for you</span>
+                      </div>
+                    )}
+                    {option.tags && option.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {option.tags.map((tag, tagIdx) => (
+                          <Badge 
+                            key={tagIdx} 
+                            variant="secondary"
+                            className="text-xs"
+                          >
+                            {tag}
+                          </Badge>
+                        ))}
                       </div>
                     )}
                   </div>

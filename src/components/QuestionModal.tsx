@@ -16,7 +16,8 @@ interface QuestionModalProps {
   options: string[];
   currentQuestion: number;
   totalQuestions: number;
-  onAnswer: (answer: string) => void;
+  onAnswer: (answer: string | string[]) => void;
+  allowMultiple?: boolean;
 }
 
 /**
@@ -30,13 +31,27 @@ export const QuestionModal = ({
   currentQuestion,
   totalQuestions,
   onAnswer,
+  allowMultiple = false,
 }: QuestionModalProps) => {
-  // Track which option the user has selected
+  // Track selected option(s)
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
 
-  // Submit the selected answer and reset selection for next question
+  // Toggle option for multiple selection
+  const toggleOption = (option: string) => {
+    if (selectedOptions.includes(option)) {
+      setSelectedOptions(selectedOptions.filter(o => o !== option));
+    } else {
+      setSelectedOptions([...selectedOptions, option]);
+    }
+  };
+
+  // Submit the selected answer(s) and reset selection for next question
   const handleSubmit = () => {
-    if (selectedOption) {
+    if (allowMultiple && selectedOptions.length > 0) {
+      onAnswer(selectedOptions);
+      setSelectedOptions([]);
+    } else if (selectedOption) {
       onAnswer(selectedOption);
       setSelectedOption(null);
     }
@@ -68,34 +83,43 @@ export const QuestionModal = ({
               Question {currentQuestion} of {totalQuestions}
             </p>
             <h2 className="text-3xl font-bold text-foreground">{question}</h2>
+            {allowMultiple && (
+              <p className="text-sm text-muted-foreground">Select multiple options</p>
+            )}
           </div>
 
           {/* Options */}
           <div className="space-y-3">
-            {options.map((option, idx) => (
-              <button
-                key={idx}
-                onClick={() => setSelectedOption(option)}
-                className={`w-full p-4 rounded-lg border-2 text-left transition-all duration-200 ${
-                  selectedOption === option
-                    ? 'border-primary bg-primary/10 shadow-glow'
-                    : 'border-border bg-card/50 hover:border-primary/50 hover:bg-card'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-lg font-medium">{option}</span>
-                  {selectedOption === option && (
-                    <CheckCircle2 className="h-6 w-6 text-primary animate-scale-in" />
-                  )}
-                </div>
-              </button>
-            ))}
+            {options.map((option, idx) => {
+              const isSelected = allowMultiple 
+                ? selectedOptions.includes(option)
+                : selectedOption === option;
+              
+              return (
+                <button
+                  key={idx}
+                  onClick={() => allowMultiple ? toggleOption(option) : setSelectedOption(option)}
+                  className={`w-full p-4 rounded-lg border-2 text-left transition-all duration-200 ${
+                    isSelected
+                      ? 'border-primary bg-primary/10 shadow-glow'
+                      : 'border-border bg-card/50 hover:border-primary/50 hover:bg-card'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-lg font-medium">{option}</span>
+                    {isSelected && (
+                      <CheckCircle2 className="h-6 w-6 text-primary animate-scale-in" />
+                    )}
+                  </div>
+                </button>
+              );
+            })}
           </div>
 
           {/* Submit Button */}
           <Button
             onClick={handleSubmit}
-            disabled={!selectedOption}
+            disabled={allowMultiple ? selectedOptions.length === 0 : !selectedOption}
             className="w-full bg-gradient-primary text-primary-foreground hover:shadow-glow transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-lg py-6"
           >
             Continue

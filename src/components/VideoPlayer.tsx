@@ -14,6 +14,7 @@ interface VideoPlayerProps {
   onTimeUpdate?: (currentTime: number) => void;
   onVideoEnded?: () => void;
   isBlurred?: boolean;
+  allowSeeking?: boolean;
 }
 
 /**
@@ -32,11 +33,12 @@ export interface VideoPlayerRef {
  * Supports play/pause, mute/unmute, fullscreen, and external control via ref
  */
 export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
-  ({ src, onTimeUpdate, onVideoEnded, isBlurred = false }, ref) => {
+  ({ src, onTimeUpdate, onVideoEnded, isBlurred = false, allowSeeking = true }, ref) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [isMuted, setIsMuted] = useState(false);
+    const [progress, setProgress] = useState(0);
 
     // Expose play, pause, getCurrentTime, and seekTo methods to parent components
     useImperativeHandle(ref, () => ({
@@ -58,6 +60,10 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       const handleTimeUpdate = () => {
         if (onTimeUpdate) {
           onTimeUpdate(video.currentTime);
+        }
+        // Update progress bar
+        if (video.duration) {
+          setProgress((video.currentTime / video.duration) * 100);
         }
       };
 
@@ -137,6 +143,18 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       }
     };
 
+    // Handle progress bar seeking
+    const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
+      if (!videoRef.current || !allowSeeking) return;
+
+      const rect = e.currentTarget.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const percentage = clickX / rect.width;
+      const newTime = percentage * videoRef.current.duration;
+
+      videoRef.current.currentTime = newTime;
+    };
+
     return (
       <div ref={containerRef} className="relative w-full h-screen bg-background overflow-hidden">
         <video
@@ -150,6 +168,25 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
 
         {/* Gradient Overlay */}
         <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-overlay pointer-events-none" />
+
+        {/* Progress Bar */}
+        <div
+          className={`absolute bottom-0 left-0 right-0 h-2 bg-white/30 group/progress ${
+            allowSeeking ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
+          }`}
+          onClick={handleProgressClick}
+        >
+          <div
+            className="h-full bg-primary transition-all duration-150"
+            style={{ width: `${progress}%` }}
+          />
+          {allowSeeking && (
+            <div
+              className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-primary rounded-full opacity-0 group-hover/progress:opacity-100 transition-opacity"
+              style={{ left: `${progress}%`, transform: "translate(-50%, -50%)" }}
+            />
+          )}
+        </div>
 
         {/* Controls */}
         <div className="absolute bottom-8 left-8 right-8 flex items-center justify-between gap-4">

@@ -15,6 +15,7 @@ interface PersonalityQuestion {
   time: number;
   question: string;
   options: string[];
+  allowMultiple?: boolean;
 }
 
 /**
@@ -28,12 +29,14 @@ interface BranchingChoice {
   id: number;
   time: number;
   title: string;
+  condition?: (answers: Array<string | string[]>) => boolean;
   options: Array<{
     text: string;
     isRecommended?: boolean;
     videoUrl: string;
-    startTime?: number; // Optional: start the new video at a specific time
-    returnTime: number; // Time to resume main video after branch ends
+    startTime?: number;
+    returnTime: number;
+    tags?: string[];
   }>;
 }
 
@@ -69,7 +72,7 @@ const Index = () => {
   >(null);
 
   // Store user's personality answers for personalized recommendations
-  const [personalityAnswers, setPersonalityAnswers] = useState<string[]>([]);
+  const [personalityAnswers, setPersonalityAnswers] = useState<Array<string | string[]>>([]);
 
   // Track which questions/branches have already been shown (by ID)
   const [askedQuestions, setAskedQuestions] = useState<Set<number>>(new Set());
@@ -85,6 +88,7 @@ const Index = () => {
       time: 0,
       question: "What are your top 2 most preferred genres for movies?",
       options: ["Action", "Comedy", "Romance", "Thriller", "Horror"],
+      allowMultiple: true,
     },
     {
       id: 2,
@@ -109,17 +113,17 @@ const Index = () => {
       options: [
         {
           text: "I am liking it... let's continue!",
-          isRecommended: personalityAnswers[0] === "Action and courage",
           videoUrl: "public/videos/PP1A-Negative.mp4",
           startTime: 0,
-          returnTime: 30, // Resume main video at 20 seconds
+          returnTime: 30,
+          tags: ["Director's Choice"],
         },
         {
           text: "It's sad, shift towards brighter thoughts",
-          isRecommended: personalityAnswers[0] === "Patience and planning",
           videoUrl: "public/videos/PP1B-Positive.mp4",
           startTime: 0,
           returnTime: 29,
+          tags: ["Recommended"],
         },
       ],
     },
@@ -216,7 +220,10 @@ const Index = () => {
       if (personalityAnswers.length === personalityQuestions.length) {
         const nextBranch = branchingChoices.find(
           (b) =>
-            !askedBranches.has(b.id) && time >= b.time && time < b.time + 0.5
+            !askedBranches.has(b.id) && 
+            time >= b.time && 
+            time < b.time + 0.5 &&
+            (!b.condition || b.condition(personalityAnswers))
         );
 
         if (nextBranch && !showQuestion && !showBranching) {
@@ -233,7 +240,7 @@ const Index = () => {
    * Handle personality question answer submission
    * Store answer, close modal, and resume video playback
    */
-  const handleAnswer = (answer: string) => {
+  const handleAnswer = (answer: string | string[]) => {
     setPersonalityAnswers([...personalityAnswers, answer]);
     setShowQuestion(false);
     setTimeout(() => {
@@ -319,6 +326,7 @@ const Index = () => {
         onTimeUpdate={handleTimeUpdate}
         onVideoEnded={handleVideoEnded}
         isBlurred={showQuestion || showBranching}
+        allowSeeking={personalityAnswers.length === personalityQuestions.length}
       />
 
       {showQuestion && (
@@ -328,6 +336,7 @@ const Index = () => {
           currentQuestion={currentQuestionIndex + 1}
           totalQuestions={personalityQuestions.length}
           onAnswer={handleAnswer}
+          allowMultiple={personalityQuestions[currentQuestionIndex].allowMultiple}
         />
       )}
 
