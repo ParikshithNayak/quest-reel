@@ -61,8 +61,7 @@ export const BranchingModal = ({ title, options, onChoice }: BranchingModalProps
                         {option.tags.map((tag, tagIdx) => (
                           <Badge 
                             key={tagIdx} 
-                            variant="secondary"
-                            className="text-xs"
+                            className="text-xs font-semibold bg-gradient-to-r from-primary/20 to-accent/20 border-primary/30 text-foreground shadow-sm hover:shadow-md transition-shadow"
                           >
                             {tag}
                           </Badge>

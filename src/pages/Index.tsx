@@ -326,7 +326,7 @@ const Index = () => {
         onTimeUpdate={handleTimeUpdate}
         onVideoEnded={handleVideoEnded}
         isBlurred={showQuestion || showBranching}
-        allowSeeking={personalityAnswers.length === personalityQuestions.length}
+        allowSeeking={personalityAnswers.length === personalityQuestions.length && videoStack.length === 0}
       />
 
       {showQuestion && (

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Check } from 'lucide-react';
 
 /**
  * Props for the QuestionModal component
@@ -99,16 +99,25 @@ export const QuestionModal = ({
                 <button
                   key={idx}
                   onClick={() => allowMultiple ? toggleOption(option) : setSelectedOption(option)}
-                  className={`w-full p-4 rounded-lg border-2 text-left transition-all duration-200 ${
+                  className={`w-full p-4 rounded-lg border-2 text-left transition-all duration-200 group ${
                     isSelected
                       ? 'border-primary bg-primary/10 shadow-glow'
-                      : 'border-border bg-card/50 hover:border-primary/50 hover:bg-card'
+                      : 'border-border bg-card/50 hover:border-primary/50 hover:bg-card hover:scale-[1.01]'
                   }`}
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="text-lg font-medium">{option}</span>
-                    {isSelected && (
-                      <CheckCircle2 className="h-6 w-6 text-primary animate-scale-in" />
+                  <div className="flex items-center gap-3">
+                    {allowMultiple ? (
+                      <div className={`flex-shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center transition-all ${
+                        isSelected 
+                          ? 'bg-primary border-primary' 
+                          : 'border-border bg-background group-hover:border-primary/50'
+                      }`}>
+                        {isSelected && <Check className="h-4 w-4 text-primary-foreground" />}
+                      </div>
+                    ) : null}
+                    <span className="text-lg font-medium flex-1">{option}</span>
+                    {!allowMultiple && isSelected && (
+                      <CheckCircle2 className="h-6 w-6 text-primary animate-scale-in flex-shrink-0" />
                     )}
                   </div>
                 </button>
