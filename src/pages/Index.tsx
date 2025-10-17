@@ -251,10 +251,23 @@ const Index = () => {
   /**
    * Handle branching choice selection
    * Push current video state to stack, switch to branch video
+   * Or continue main video if Director's Choice
    */
   const handleBranchChoice = (choiceIndex: number) => {
     const selectedOption =
       branchingChoices[currentBranchingIndex].options[choiceIndex];
+
+    // Check if this is a Director's Choice (continue main video)
+    const isDirectorsChoice = selectedOption.tags?.includes("Director's Choice");
+
+    if (isDirectorsChoice) {
+      // Just close the modal and continue playing the main video
+      setShowBranching(false);
+      setTimeout(() => {
+        videoRef.current?.play();
+      }, 300);
+      return;
+    }
 
     // Save current video state to stack before branching
     setVideoStack((prev) => [
