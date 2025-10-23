@@ -21,7 +21,7 @@ interface PersonalityQuestion {
 /**
  * Branching story choice shown later in the video
  * @param id - Unique identifier for the choice
- * @param time - Video timestamp (in seconds) when choice should appear
+ * @param time - Video timestamp (in seconds with millisecond precision) when choice should appear
  * @param title - The decision prompt title
  * @param options - Array of choice options with optional recommendation flags and video URLs
  */
@@ -35,6 +35,7 @@ interface BranchingChoice {
     isRecommended?: boolean;
     videoUrl: string;
     startTime?: number;
+    switchTime?: number; // Time on main video when to switch to this branch
     returnTime: number;
     tags?: string[];
   }>;
@@ -70,6 +71,13 @@ const Index = () => {
   const [currentBranchingChoice, setCurrentBranchingChoice] = useState<
     number | null
   >(null);
+
+  // Track pending branch switches (when switchTime is specified)
+  const [pendingBranchSwitch, setPendingBranchSwitch] = useState<{
+    branchIndex: number;
+    choiceIndex: number;
+    switchTime: number;
+  } | null>(null);
 
   // Store user's personality answers for personalized recommendations
   const [personalityAnswers, setPersonalityAnswers] = useState<
@@ -203,12 +211,53 @@ const Index = () => {
         : time;
     setCumulativeTime(newCumulativeTime);
 
+    // Check for pending branch switches
+    if (pendingBranchSwitch && videoStack.length === 0) {
+      const { branchIndex, choiceIndex, switchTime } = pendingBranchSwitch;
+      
+      // Use more precise time checking (0.1s window for millisecond precision)
+      if (time >= switchTime && time < switchTime + 0.1) {
+        const selectedOption = branchingChoices[branchIndex].options[choiceIndex];
+        
+        // Save current video state to stack before branching
+        setVideoStack((prev) => [
+          ...prev,
+          {
+            url: videoUrl,
+            timestamp: currentTime,
+            cumulativeTime: cumulativeTime,
+          },
+        ]);
+
+        // Store the choice index to use the returnTime later
+        setCurrentBranchingChoice(choiceIndex);
+
+        // Switch to the new branch video
+        setVideoUrl(selectedOption.videoUrl);
+        setCurrentTime(selectedOption.startTime || 0);
+
+        // Clear pending switch
+        setPendingBranchSwitch(null);
+
+        // Resume playback after a short delay
+        setTimeout(() => {
+          if (selectedOption.startTime && videoRef.current) {
+            videoRef.current.seekTo(selectedOption.startTime);
+          }
+          videoRef.current?.play();
+        }, 100);
+        
+        return;
+      }
+    }
+
     // Only check for questions/branches if we're on the main video (not in a branch)
     if (videoStack.length === 0) {
       // Check for personality questions (shown at the start, based on actual video time)
+      // Use 0.1s window for better millisecond precision
       const nextQuestion = personalityQuestions.find(
         (q) =>
-          !askedQuestions.has(q.id) && time >= q.time && time < q.time + 0.5
+          !askedQuestions.has(q.id) && time >= q.time && time < q.time + 0.1
       );
 
       if (nextQuestion && !showQuestion && !showBranching) {
@@ -224,7 +273,7 @@ const Index = () => {
           (b) =>
             !askedBranches.has(b.id) &&
             time >= b.time &&
-            time < b.time + 0.5 &&
+            time < b.time + 0.1 &&
             (!b.condition || b.condition(personalityAnswers))
         );
 
@@ -252,7 +301,7 @@ const Index = () => {
 
   /**
    * Handle branching choice selection
-   * Push current video state to stack, switch to branch video
+   * If switchTime is specified, schedule the switch; otherwise switch immediately
    * Or continue main video if Director's Choice
    */
   const handleBranchChoice = (choiceIndex: number) => {
@@ -272,7 +321,24 @@ const Index = () => {
       return;
     }
 
-    // Save current video state to stack before branching
+    // Check if this branch has a delayed switch time
+    if (selectedOption.switchTime !== undefined) {
+      // Schedule the branch switch for later
+      setPendingBranchSwitch({
+        branchIndex: currentBranchingIndex,
+        choiceIndex: choiceIndex,
+        switchTime: selectedOption.switchTime,
+      });
+      
+      // Close modal and continue playing main video until switchTime
+      setShowBranching(false);
+      setTimeout(() => {
+        videoRef.current?.play();
+      }, 300);
+      return;
+    }
+
+    // Immediate switch: Save current video state to stack before branching
     setVideoStack((prev) => [
       ...prev,
       {
