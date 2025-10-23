@@ -215,8 +215,8 @@ const Index = () => {
     if (pendingBranchSwitch && videoStack.length === 0) {
       const { branchIndex, choiceIndex, switchTime } = pendingBranchSwitch;
       
-      // Use more precise time checking (0.1s window for millisecond precision)
-      if (time >= switchTime && time < switchTime + 0.1) {
+      // Use 0.5s window for reliable time checking
+      if (time >= switchTime && time < switchTime + 0.5) {
         const selectedOption = branchingChoices[branchIndex].options[choiceIndex];
         
         // Save current video state to stack before branching
@@ -254,10 +254,10 @@ const Index = () => {
     // Only check for questions/branches if we're on the main video (not in a branch)
     if (videoStack.length === 0) {
       // Check for personality questions (shown at the start, based on actual video time)
-      // Use 0.1s window for better millisecond precision
+      // Use 0.5s window for reliable triggering
       const nextQuestion = personalityQuestions.find(
         (q) =>
-          !askedQuestions.has(q.id) && time >= q.time && time < q.time + 0.1
+          !askedQuestions.has(q.id) && time >= q.time && time < q.time + 0.5
       );
 
       if (nextQuestion && !showQuestion && !showBranching) {
@@ -273,7 +273,7 @@ const Index = () => {
           (b) =>
             !askedBranches.has(b.id) &&
             time >= b.time &&
-            time < b.time + 0.1 &&
+            time < b.time + 0.5 &&
             (!b.condition || b.condition(personalityAnswers))
         );
 
