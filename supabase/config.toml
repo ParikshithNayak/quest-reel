@@ -1,0 +1,2 @@
+[functions.analyze-personality]
+verify_jwt = false

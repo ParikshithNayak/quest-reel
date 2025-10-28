@@ -291,9 +291,29 @@ const Index = () => {
    * Handle personality question answer submission
    * Store answer, close modal, and resume video playback
    */
-  const handleAnswer = (answer: string | string[]) => {
-    setPersonalityAnswers([...personalityAnswers, answer]);
+  const handleAnswer = async (answer: string | string[]) => {
+    const updatedAnswers = [...personalityAnswers, answer];
+    setPersonalityAnswers(updatedAnswers);
     setShowQuestion(false);
+    
+    // If all personality questions are answered, send to Gemini API
+    if (updatedAnswers.length === personalityQuestions.length) {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analyze-personality`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ personalityAnswers: updatedAnswers }),
+        });
+        
+        const data = await response.json();
+        console.log('Personality Analysis:', data.analysis);
+      } catch (error) {
+        console.error('Error analyzing personality:', error);
+      }
+    }
+    
     setTimeout(() => {
       videoRef.current?.play();
     }, 300);
