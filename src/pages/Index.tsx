@@ -89,7 +89,9 @@ const Index = () => {
   const [askedBranches, setAskedBranches] = useState<Set<number>>(new Set());
 
   // Current video URL - changes based on branching choices
-  const [videoUrl, setVideoUrl] = useState("/videos/spiderman_1080.mp4");
+  const [videoUrl, setVideoUrl] = useState(
+    "https://real-in-reel-general-poc.s3.ap-south-1.amazonaws.com/first_cut_spiderman_1080_min_size.mp4"
+  );
 
   // Personality questions at the start (customize these)
   const personalityQuestions: PersonalityQuestion[] = [
@@ -130,7 +132,8 @@ const Index = () => {
         },
         {
           text: "It's sad, shift towards brighter thoughts",
-          videoUrl: "/videos/PP1B-Positive.mp4",
+          videoUrl:
+            "https://real-in-reel-general-poc.s3.ap-south-1.amazonaws.com/Romance.mp4",
           startTime: 0,
           returnTime: 29,
           tags: ["Recommended"],
@@ -214,11 +217,12 @@ const Index = () => {
     // Check for pending branch switches
     if (pendingBranchSwitch && videoStack.length === 0) {
       const { branchIndex, choiceIndex, switchTime } = pendingBranchSwitch;
-      
+
       // Use 0.5s window for reliable time checking
       if (time >= switchTime && time < switchTime + 0.5) {
-        const selectedOption = branchingChoices[branchIndex].options[choiceIndex];
-        
+        const selectedOption =
+          branchingChoices[branchIndex].options[choiceIndex];
+
         // Save current video state to stack before branching
         setVideoStack((prev) => [
           ...prev,
@@ -246,7 +250,7 @@ const Index = () => {
           }
           videoRef.current?.play();
         }, 100);
-        
+
         return;
       }
     }
@@ -295,25 +299,30 @@ const Index = () => {
     const updatedAnswers = [...personalityAnswers, answer];
     setPersonalityAnswers(updatedAnswers);
     setShowQuestion(false);
-    
+
     // If all personality questions are answered, send to Gemini API
     if (updatedAnswers.length === personalityQuestions.length) {
       try {
-        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analyze-personality`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ personalityAnswers: updatedAnswers }),
-        });
-        
+        const response = await fetch(
+          `${
+            import.meta.env.VITE_SUPABASE_URL
+          }/functions/v1/analyze-personality`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ personalityAnswers: updatedAnswers }),
+          }
+        );
+
         const data = await response.json();
-        console.log('Personality Analysis:', data.analysis);
+        console.log("Personality Analysis:", data.analysis);
       } catch (error) {
-        console.error('Error analyzing personality:', error);
+        console.error("Error analyzing personality:", error);
       }
     }
-    
+
     setTimeout(() => {
       videoRef.current?.play();
     }, 300);
@@ -349,7 +358,7 @@ const Index = () => {
         choiceIndex: choiceIndex,
         switchTime: selectedOption.switchTime,
       });
-      
+
       // Close modal and continue playing main video until switchTime
       setShowBranching(false);
       setTimeout(() => {
