@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { VideoPlayer, VideoPlayerRef } from "@/components/VideoPlayer";
 import { QuestionModal } from "@/components/QuestionModal";
 import { BranchingModal } from "@/components/BranchingModal";
@@ -31,6 +32,7 @@ interface BranchingChoice {
   title: string;
   condition?: (answers: Array<string | string[]>) => boolean;
   options: Array<{
+    id: number;
     text: string;
     isRecommended?: boolean;
     videoUrl: string;
@@ -47,6 +49,7 @@ interface BranchingChoice {
  * Manages personality questions, branching choices, and video playback
  */
 const Index = () => {
+    const navigate = useNavigate();
   // Ref to control video playback programmatically
   const videoRef = useRef<VideoPlayerRef>(null);
 
@@ -89,9 +92,17 @@ const Index = () => {
   const [askedBranches, setAskedBranches] = useState<Set<number>>(new Set());
 
   // Current video URL - changes based on branching choices
-  const [videoUrl, setVideoUrl] = useState(
-    "https://real-in-reel-general-poc.s3.ap-south-1.amazonaws.com/first_cut_spiderman_1080_min_size.mp4"
-  );
+  const [videoUrl, setVideoUrl] = useState("/videos/spiderman_1080.mp4");
+
+  const [journeyPath, setJourneyPath] = useState<Array<{
+    type: 'question' | 'branch';
+    title: string;
+    choice: string;
+    timestamp: number;
+  }>>([]);
+
+  // Track selected options for AI filtering
+  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
 
   // Personality questions at the start (customize these)
   const personalityQuestions: PersonalityQuestion[] = [
@@ -124,6 +135,7 @@ const Index = () => {
       title: " What should he focus on?",
       options: [
         {
+          id: 1,
           text: "I am liking it... let's continue!",
           videoUrl: "/videos/PP1A-Negative.mp4",
           startTime: 0,
@@ -131,6 +143,7 @@ const Index = () => {
           tags: ["Director's Choice"],
         },
         {
+          id: 2,
           text: "It's sad, shift towards brighter thoughts",
           videoUrl:
             "https://real-in-reel-general-poc.s3.ap-south-1.amazonaws.com/Romance.mp4",
@@ -146,6 +159,7 @@ const Index = () => {
       title: "Pick your vibe...",
       options: [
         {
+          id: 3,
           text: "Am I Dreaming (Slow / Melancholic)",
           isRecommended: personalityAnswers[0] === "Action and courage",
           videoUrl: "/videos/Am_I_Dreaming.mp4",
@@ -153,6 +167,7 @@ const Index = () => {
           returnTime: 65, // Resume main video at 20 seconds
         },
         {
+          id: 4,
           text: "Sunflower (Melodic Hip-Hop)",
           isRecommended: personalityAnswers[0] === "Patience and planning",
           videoUrl: "/videos/Sunflower_BalanceAndReflective.mp4",
@@ -160,7 +175,8 @@ const Index = () => {
           returnTime: 65,
         },
         {
-          text: "What’s Up Danger (Calm / Lo-Fi Version)",
+          id: 5,
+          text: "What's Up Danger (Calm / Lo-Fi Version)",
           isRecommended: personalityAnswers[0] === "Patience and planning",
           videoUrl: "/videos/WhatsUpDangerLoFiBeatVersion.mp4",
           startTime: 0,
@@ -198,13 +214,71 @@ const Index = () => {
     // },
   ];
 
+  // Filtered branching choices from AI
+  const [filteredBranchingChoices, setFilteredBranchingChoices] = useState<BranchingChoice[]>(branchingChoices);
+
+  /**
+   * Call AI API to filter and rephrase branching options for a specific question
+   */
+  const filterOptionsWithAI = async (branchIndex: number) => {
+    try {
+      const branch = branchingChoices[branchIndex];
+      const availableOptions = branch.options.map(option => ({
+        id: `opt_${option.id}`,
+        text: option.text
+      }));
+
+      console.log("AI payload", {
+          selected_options: selectedOptions,
+          available_options: availableOptions,
+          max_options: 2
+        })
+
+      const response = await fetch('https://real-in-reel-backend.vercel.app/api/filter-options', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          selected_options: selectedOptions,
+          available_options: availableOptions,
+          max_options: 2
+        }),
+      });
+
+      const data = await response.json();
+
+      console.log("AI Response: ", data)
+      
+      if (data.options && Array.isArray(data.options)) {
+        const updatedBranchingChoices = [...filteredBranchingChoices];
+        const filteredOptions = data.options.map((filteredOpt: any) => {
+          const originalOption = branch.options.find(opt => `opt_${opt.id}` === filteredOpt.id);
+          return {
+            ...originalOption,
+            text: filteredOpt.text
+          };
+        });
+        
+        updatedBranchingChoices[branchIndex] = {
+          ...branch,
+          options: filteredOptions
+        };
+        
+        setFilteredBranchingChoices(updatedBranchingChoices);
+      }
+    } catch (error) {
+      console.error('Error filtering options with AI:', error);
+    }
+  };
+
   /**
    * Handle video time updates
    * Check if we've reached a timestamp for a personality question or branching choice
    * Uses cumulative time for branching checks
    * Pause video and show appropriate modal when triggered
    */
-  const handleTimeUpdate = (time: number) => {
+  const handleTimeUpdate = async (time: number) => {
     setCurrentTime(time);
 
     // Update cumulative time based on current video playback
@@ -220,9 +294,8 @@ const Index = () => {
 
       // Use 0.5s window for reliable time checking
       if (time >= switchTime && time < switchTime + 0.5) {
-        const selectedOption =
-          branchingChoices[branchIndex].options[choiceIndex];
-
+        const selectedOption = filteredBranchingChoices[branchIndex].options[choiceIndex];
+        
         // Save current video state to stack before branching
         setVideoStack((prev) => [
           ...prev,
@@ -273,7 +346,7 @@ const Index = () => {
 
       // Check for branching choices based on main video time (only after all personality questions are answered)
       if (personalityAnswers.length === personalityQuestions.length) {
-        const nextBranch = branchingChoices.find(
+        const nextBranch = filteredBranchingChoices.find(
           (b) =>
             !askedBranches.has(b.id) &&
             time >= b.time &&
@@ -282,7 +355,9 @@ const Index = () => {
         );
 
         if (nextBranch && !showQuestion && !showBranching) {
-          setCurrentBranchingIndex(branchingChoices.indexOf(nextBranch));
+          const branchIndex = filteredBranchingChoices.indexOf(nextBranch);
+          
+          setCurrentBranchingIndex(branchIndex);
           setShowBranching(true);
           videoRef.current?.pause();
           setAskedBranches((prev) => new Set(prev).add(nextBranch.id));
@@ -295,29 +370,32 @@ const Index = () => {
    * Handle personality question answer submission
    * Store answer, close modal, and resume video playback
    */
+  ///////// pending
   const handleAnswer = async (answer: string | string[]) => {
+    const currentQuestion = personalityQuestions[currentQuestionIndex];
+    const answerTextPersonality = Array.isArray(answer) ? answer.join(', ') : answer;
+
     const updatedAnswers = [...personalityAnswers, answer];
     setPersonalityAnswers(updatedAnswers);
+    setJourneyPath(prev => [...prev, {
+        type: 'question',
+        title: currentQuestion.question,
+        choice: answerTextPersonality,
+        timestamp: currentTime
+    }]);
+    
     setShowQuestion(false);
-
-    // If all personality questions are answered, send to Gemini API
+    
+    // Add personality answer to selected options
+    const answerText = Array.isArray(answer) ? answer.join(', ') : answer;
+    setSelectedOptions(prev => [...prev, answerText]);
+    
+    // If all personality questions are answered, send to Gemini API and filter first branching question
     if (updatedAnswers.length === personalityQuestions.length) {
       try {
-        const response = await fetch(
-          `${
-            import.meta.env.VITE_SUPABASE_URL
-          }/functions/v1/analyze-personality`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ personalityAnswers: updatedAnswers }),
-          }
-        );
-
-        const data = await response.json();
-        console.log("Personality Analysis:", data.analysis);
+        setTimeout(async () => {
+        await filterOptionsWithAI(0);
+      }, 100);
       } catch (error) {
         console.error("Error analyzing personality:", error);
       }
@@ -333,9 +411,29 @@ const Index = () => {
    * If switchTime is specified, schedule the switch; otherwise switch immediately
    * Or continue main video if Director's Choice
    */
-  const handleBranchChoice = (choiceIndex: number) => {
+  const handleBranchChoice = async (choiceIndex: number) => {
     const selectedOption =
-      branchingChoices[currentBranchingIndex].options[choiceIndex];
+      filteredBranchingChoices[currentBranchingIndex].options[choiceIndex];
+    const currentBranch = branchingChoices[currentBranchingIndex];
+
+    setJourneyPath(prev => [...prev, {
+        type: 'branch',
+        title: currentBranch.title,
+        choice: selectedOption.text,
+        timestamp: currentTime
+    }]);
+
+    // Add selected option to tracking
+    setSelectedOptions(prev => [...prev, selectedOption.text]);
+
+    // Filter next branching question if it exists
+    const nextBranchIndex = currentBranchingIndex + 1;
+    if (nextBranchIndex < branchingChoices.length) {
+      // Update selected options first, then filter
+      setTimeout(async () => {
+        await filterOptionsWithAI(nextBranchIndex);
+      }, 100);
+    }
 
     // Check if this is a Director's Choice (continue main video)
     const isDirectorsChoice =
@@ -410,7 +508,7 @@ const Index = () => {
 
       // Get the developer-specified return time for this branch
       const selectedOption =
-        branchingChoices[currentBranchingIndex].options[currentBranchingChoice];
+        filteredBranchingChoices[currentBranchingIndex].options[currentBranchingChoice];
       const resumeTime = selectedOption.returnTime;
 
       // Restore the previous video
@@ -426,6 +524,13 @@ const Index = () => {
         videoRef.current?.seekTo(resumeTime);
         videoRef.current?.play();
       }, 100);
+    } else if (videoStack.length === 0){
+        navigate('/completion', {
+          state: {
+            personalityAnswers,
+            journeyPath
+          },
+        });
     }
   };
 
@@ -458,8 +563,8 @@ const Index = () => {
 
       {showBranching && (
         <BranchingModal
-          title={branchingChoices[currentBranchingIndex].title}
-          options={branchingChoices[currentBranchingIndex].options}
+          title={filteredBranchingChoices[currentBranchingIndex].title}
+          options={filteredBranchingChoices[currentBranchingIndex].options}
           onChoice={handleBranchChoice}
         />
       )}
