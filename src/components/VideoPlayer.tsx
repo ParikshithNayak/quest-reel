@@ -189,32 +189,32 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
         </div>
 
         {/* Controls */}
-        <div className="absolute bottom-8 left-8 right-8 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
+        <div className="absolute bottom-4 sm:bottom-6 md:bottom-8 left-4 sm:left-6 md:left-8 right-4 sm:right-6 md:right-8 flex items-center justify-between gap-2 sm:gap-3 md:gap-4">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Button
               variant="secondary"
               size="icon"
               onClick={togglePlay}
-              className="bg-card/80 backdrop-blur-sm hover:bg-card border-border shadow-soft"
+              className="bg-card/80 backdrop-blur-sm hover:bg-card border-border shadow-soft h-8 w-8 sm:h-10 sm:w-10"
             >
-              {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+              {isPlaying ? <Pause className="h-4 w-4 sm:h-5 sm:w-5" /> : <Play className="h-4 w-4 sm:h-5 sm:w-5" />}
             </Button>
             <Button
               variant="secondary"
               size="icon"
               onClick={toggleMute}
-              className="bg-card/80 backdrop-blur-sm hover:bg-card border-border shadow-soft"
+              className="bg-card/80 backdrop-blur-sm hover:bg-card border-border shadow-soft h-8 w-8 sm:h-10 sm:w-10"
             >
-              {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+              {isMuted ? <VolumeX className="h-4 w-4 sm:h-5 sm:w-5" /> : <Volume2 className="h-4 w-4 sm:h-5 sm:w-5" />}
             </Button>
           </div>
           <Button
             variant="secondary"
             size="icon"
             onClick={toggleFullscreen}
-            className="bg-card/80 backdrop-blur-sm hover:bg-card border-border shadow-soft"
+            className="bg-card/80 backdrop-blur-sm hover:bg-card border-border shadow-soft h-8 w-8 sm:h-10 sm:w-10"
           >
-            <Maximize className="h-5 w-5" />
+            <Maximize className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
         </div>
       </div>
