@@ -183,10 +183,11 @@ const Index = () => {
         {
           id: 6,
           text: "Make it a little spooky",
-          videoUrl: "/videos/SeekHelp.mp4", //thriller yet to be updated
+          videoUrl:
+            "https://real-in-reel-general-poc.s3.ap-south-1.amazonaws.com/ThrillerFinal.mp4",
           startTime: 0,
-          returnTime: 29,
-          switchTime: 28,
+          returnTime: 94.6,
+          switchTime: 35.6,
         },
         {
           id: 7,
