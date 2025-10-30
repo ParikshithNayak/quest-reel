@@ -49,7 +49,7 @@ interface BranchingChoice {
  * Manages personality questions, branching choices, and video playback
  */
 const Index = () => {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
   // Ref to control video playback programmatically
   const videoRef = useRef<VideoPlayerRef>(null);
 
@@ -92,14 +92,18 @@ const Index = () => {
   const [askedBranches, setAskedBranches] = useState<Set<number>>(new Set());
 
   // Current video URL - changes based on branching choices
-  const [videoUrl, setVideoUrl] = useState("/videos/spiderman_1080.mp4");
+  const [videoUrl, setVideoUrl] = useState(
+    "https://real-in-reel-general-poc.s3.ap-south-1.amazonaws.com/demo_3_main_compressed.mp4"
+  );
 
-  const [journeyPath, setJourneyPath] = useState<Array<{
-    type: 'question' | 'branch';
-    title: string;
-    choice: string;
-    timestamp: number;
-  }>>([]);
+  const [journeyPath, setJourneyPath] = useState<
+    Array<{
+      type: "question" | "branch";
+      title: string;
+      choice: string;
+      timestamp: number;
+    }>
+  >([]);
 
   // Track selected options for AI filtering
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
@@ -108,21 +112,19 @@ const Index = () => {
   const personalityQuestions: PersonalityQuestion[] = [
     {
       id: 1,
-      time: 0,
-      question: "What are your top 2 most preferred genres for movies?",
-      options: ["Action", "Comedy", "Romance", "Thriller", "Horror"],
+      time: 6.1,
+      question: "What are your preferred genres for movies?",
+      options: ["Comedy", "Romance", "Thriller/Horror"],
       allowMultiple: true,
     },
     {
       id: 2,
-      time: 10,
+      time: 17,
       question: "What would you do if you were to be in Miles' position?",
       options: [
-        "Try to think out of the box with a more creative soultion to cope with stress and anxiety",
-        "Try to organize my thoughts & take control of your responsibilities",
+        "Try to organize your thoughts & take control of your responsibilities",
         "Try to seek help from friends & family",
-        "Try to just go with the flow, attributing it to fate",
-        "Get bogged down and go into your shell",
+        "Go with the flow, attributing it to fate",
       ],
     },
   ];
@@ -131,12 +133,12 @@ const Index = () => {
   const branchingChoices: BranchingChoice[] = [
     {
       id: 1,
-      time: 19,
-      title: " What should he focus on?",
+      time: 22,
+      title: "How do you like it?",
       options: [
         {
           id: 1,
-          text: "I am liking it... let's continue!",
+          text: "I am loving it... keep going!",
           videoUrl: "/videos/PP1A-Negative.mp4",
           startTime: 0,
           returnTime: 30,
@@ -144,78 +146,64 @@ const Index = () => {
         },
         {
           id: 2,
-          text: "It's sad, shift towards brighter thoughts",
+          text: "Organize thoughts & take control",
           videoUrl:
-            "https://real-in-reel-general-poc.s3.ap-south-1.amazonaws.com/Romance.mp4",
+            "https://real-in-reel-general-poc.s3.ap-south-1.amazonaws.com/MotivationFinal.mp4",
           startTime: 0,
-          returnTime: 29,
-          tags: ["Recommended"],
+          returnTime: 42,
+          switchTime: 29,
         },
-      ],
-    },
-    {
-      id: 2,
-      time: 50,
-      title: "Pick your vibe...",
-      options: [
         {
           id: 3,
-          text: "Am I Dreaming (Slow / Melancholic)",
-          isRecommended: personalityAnswers[0] === "Action and courage",
-          videoUrl: "/videos/Am_I_Dreaming.mp4",
+          text: "Seek help from friends & family",
+          videoUrl:
+            "https://real-in-reel-general-poc.s3.ap-south-1.amazonaws.com/SeekHelp.mp4",
           startTime: 0,
-          returnTime: 65, // Resume main video at 20 seconds
+          returnTime: 88,
+          switchTime: 82,
         },
         {
           id: 4,
-          text: "Sunflower (Melodic Hip-Hop)",
-          isRecommended: personalityAnswers[0] === "Patience and planning",
-          videoUrl: "/videos/Sunflower_BalanceAndReflective.mp4",
+          text: "Miles should go with the flow, attributing it to fate",
+          videoUrl:
+            "https://real-in-reel-general-poc.s3.ap-south-1.amazonaws.com/FateFinal.mp4",
           startTime: 0,
-          returnTime: 65,
+          returnTime: 81,
+          switchTime: 75,
         },
         {
           id: 5,
-          text: "What's Up Danger (Calm / Lo-Fi Version)",
-          isRecommended: personalityAnswers[0] === "Patience and planning",
-          videoUrl: "/videos/WhatsUpDangerLoFiBeatVersion.mp4",
+          text: "I want a feel good component",
+          videoUrl:
+            "https://real-in-reel-general-poc.s3.ap-south-1.amazonaws.com/Romance.mp4",
           startTime: 0,
-          returnTime: 65,
+          returnTime: 88,
+          switchTime: 82,
+        },
+        {
+          id: 6,
+          text: "Make it a little spooky",
+          videoUrl: "/videos/SeekHelp.mp4", //thriller yet to be updated
+          startTime: 0,
+          returnTime: 29,
+          switchTime: 28,
+        },
+        {
+          id: 7,
+          text: "A tinge of comedy is definetly needed!",
+          videoUrl:
+            "https://real-in-reel-general-poc.s3.ap-south-1.amazonaws.com/ComedyFinal.mp4",
+          startTime: 0,
+          returnTime: 40,
+          switchTime: 35,
         },
       ],
     },
-    // {
-    //   id: 2,
-    //   time: 25,
-    //   title: 'You discover a hidden path...',
-    //   options: [
-    //     {
-    //       text: 'Take the risky shortcut',
-    //       isRecommended: personalityAnswers[1] === 'Head-on with confidence',
-    //       videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
-    //       startTime: 0,
-    //       returnTime: 30 // Resume main video at 30 seconds
-    //     },
-    //     {
-    //       text: 'Stick to the known route',
-    //       isRecommended: personalityAnswers[1] === 'Carefully with analysis',
-    //       videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
-    //       startTime: 0,
-    //       returnTime: 30
-    //     },
-    //     {
-    //       text: 'Explore both options',
-    //       isRecommended: personalityAnswers[1] === 'Creatively with flexibility',
-    //       videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
-    //       startTime: 0,
-    //       returnTime: 30
-    //     },
-    //   ],
-    // },
   ];
 
   // Filtered branching choices from AI
-  const [filteredBranchingChoices, setFilteredBranchingChoices] = useState<BranchingChoice[]>(branchingChoices);
+  const [filteredBranchingChoices, setFilteredBranchingChoices] =
+    useState<BranchingChoice[]>(branchingChoices);
 
   /**
    * Call AI API to filter and rephrase branching options for a specific question
@@ -223,52 +211,67 @@ const Index = () => {
   const filterOptionsWithAI = async (branchIndex: number) => {
     try {
       const branch = branchingChoices[branchIndex];
-      const availableOptions = branch.options.map(option => ({
+      const availableOptions = branch.options.map((option) => ({
         id: `opt_${option.id}`,
-        text: option.text
+        text: option.text,
       }));
 
-      console.log("AI payload", {
-          selected_options: selectedOptions,
-          available_options: availableOptions,
-          max_options: 2
-        })
+      // Store first and rest options separately
+      const firstOption = availableOptions[0];
+      const restOptions = availableOptions.slice(1);
 
-      const response = await fetch('https://real-in-reel-backend.vercel.app/api/filter-options', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          selected_options: selectedOptions,
-          available_options: availableOptions,
-          max_options: 2
-        }),
+      // Payload excludes the first option
+      console.log("AI payload", {
+        selected_options: selectedOptions,
+        available_options: restOptions, // send all except first
+        max_options: 2,
       });
+
+      const response = await fetch(
+        "https://real-in-reel-backend.vercel.app/api/filter-options",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            selected_options: selectedOptions,
+            available_options: restOptions, // send all except first
+            max_options: 2,
+          }),
+        }
+      );
 
       const data = await response.json();
 
-      console.log("AI Response: ", data)
-      
+      console.log("AI Response: ", data);
+
       if (data.options && Array.isArray(data.options)) {
         const updatedBranchingChoices = [...filteredBranchingChoices];
+
+        // If needed, recover the full option details
         const filteredOptions = data.options.map((filteredOpt: any) => {
-          const originalOption = branch.options.find(opt => `opt_${opt.id}` === filteredOpt.id);
+          const originalOption = branch.options.find(
+            (opt) => `opt_${opt.id}` === filteredOpt.id
+          );
           return {
             ...originalOption,
-            text: filteredOpt.text
+            text: filteredOpt.text,
           };
         });
-        
+
+        // Prepend first option to final options
+        const finalOptions = [firstOption, ...filteredOptions];
+
         updatedBranchingChoices[branchIndex] = {
           ...branch,
-          options: filteredOptions
+          options: finalOptions,
         };
-        
+
         setFilteredBranchingChoices(updatedBranchingChoices);
       }
     } catch (error) {
-      console.error('Error filtering options with AI:', error);
+      console.error("Error filtering options with AI:", error);
     }
   };
 
@@ -294,8 +297,9 @@ const Index = () => {
 
       // Use 0.5s window for reliable time checking
       if (time >= switchTime && time < switchTime + 0.5) {
-        const selectedOption = filteredBranchingChoices[branchIndex].options[choiceIndex];
-        
+        const selectedOption =
+          filteredBranchingChoices[branchIndex].options[choiceIndex];
+
         // Save current video state to stack before branching
         setVideoStack((prev) => [
           ...prev,
@@ -356,7 +360,7 @@ const Index = () => {
 
         if (nextBranch && !showQuestion && !showBranching) {
           const branchIndex = filteredBranchingChoices.indexOf(nextBranch);
-          
+
           setCurrentBranchingIndex(branchIndex);
           setShowBranching(true);
           videoRef.current?.pause();
@@ -373,29 +377,34 @@ const Index = () => {
   ///////// pending
   const handleAnswer = async (answer: string | string[]) => {
     const currentQuestion = personalityQuestions[currentQuestionIndex];
-    const answerTextPersonality = Array.isArray(answer) ? answer.join(', ') : answer;
+    const answerTextPersonality = Array.isArray(answer)
+      ? answer.join(", ")
+      : answer;
 
     const updatedAnswers = [...personalityAnswers, answer];
     setPersonalityAnswers(updatedAnswers);
-    setJourneyPath(prev => [...prev, {
-        type: 'question',
+    setJourneyPath((prev) => [
+      ...prev,
+      {
+        type: "question",
         title: currentQuestion.question,
         choice: answerTextPersonality,
-        timestamp: currentTime
-    }]);
-    
+        timestamp: currentTime,
+      },
+    ]);
+
     setShowQuestion(false);
-    
+
     // Add personality answer to selected options
-    const answerText = Array.isArray(answer) ? answer.join(', ') : answer;
-    setSelectedOptions(prev => [...prev, answerText]);
-    
+    const answerText = Array.isArray(answer) ? answer.join(", ") : answer;
+    setSelectedOptions((prev) => [...prev, answerText]);
+
     // If all personality questions are answered, send to Gemini API and filter first branching question
     if (updatedAnswers.length === personalityQuestions.length) {
       try {
         setTimeout(async () => {
-        await filterOptionsWithAI(0);
-      }, 100);
+          await filterOptionsWithAI(0);
+        }, 100);
       } catch (error) {
         console.error("Error analyzing personality:", error);
       }
@@ -416,15 +425,18 @@ const Index = () => {
       filteredBranchingChoices[currentBranchingIndex].options[choiceIndex];
     const currentBranch = branchingChoices[currentBranchingIndex];
 
-    setJourneyPath(prev => [...prev, {
-        type: 'branch',
+    setJourneyPath((prev) => [
+      ...prev,
+      {
+        type: "branch",
         title: currentBranch.title,
         choice: selectedOption.text,
-        timestamp: currentTime
-    }]);
+        timestamp: currentTime,
+      },
+    ]);
 
     // Add selected option to tracking
-    setSelectedOptions(prev => [...prev, selectedOption.text]);
+    setSelectedOptions((prev) => [...prev, selectedOption.text]);
 
     // Filter next branching question if it exists
     const nextBranchIndex = currentBranchingIndex + 1;
@@ -508,7 +520,9 @@ const Index = () => {
 
       // Get the developer-specified return time for this branch
       const selectedOption =
-        filteredBranchingChoices[currentBranchingIndex].options[currentBranchingChoice];
+        filteredBranchingChoices[currentBranchingIndex].options[
+          currentBranchingChoice
+        ];
       const resumeTime = selectedOption.returnTime;
 
       // Restore the previous video
@@ -524,13 +538,13 @@ const Index = () => {
         videoRef.current?.seekTo(resumeTime);
         videoRef.current?.play();
       }, 100);
-    } else if (videoStack.length === 0){
-        navigate('/completion', {
-          state: {
-            personalityAnswers,
-            journeyPath
-          },
-        });
+    } else if (videoStack.length === 0) {
+      navigate("/completion", {
+        state: {
+          personalityAnswers,
+          journeyPath,
+        },
+      });
     }
   };
 
