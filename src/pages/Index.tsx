@@ -208,7 +208,7 @@ const Index = () => {
   /**
    * Call AI API to filter and rephrase branching options for a specific question
    */
-  const filterOptionsWithAI = async (branchIndex: number) => {
+  const filterOptionsWithAI = async (branchIndex: number, currentSelectedOptions?: string[]) => {
     try {
       const branch = branchingChoices[branchIndex];
       const availableOptions = branch.options.map((option) => ({
@@ -220,12 +220,17 @@ const Index = () => {
       const firstOption = availableOptions[0];
       const restOptions = availableOptions.slice(1);
 
+      // Use provided options or current state
+      const optionsToUse = currentSelectedOptions || selectedOptions;
+
       // Payload excludes the first option
       console.log("AI payload", {
-        selected_options: selectedOptions,
+        selected_options: optionsToUse,
         available_options: restOptions, // send all except first
         max_options: 2,
       });
+
+      console.log("Selected Options: ", optionsToUse);
 
       const response = await fetch(
         "https://real-in-reel-backend.vercel.app/api/filter-options",
@@ -235,7 +240,7 @@ const Index = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            selected_options: selectedOptions,
+            selected_options: optionsToUse,
             available_options: restOptions, // send all except first
             max_options: 2,
           }),
@@ -402,8 +407,9 @@ const Index = () => {
     // If all personality questions are answered, send to Gemini API and filter first branching question
     if (updatedAnswers.length === personalityQuestions.length) {
       try {
+        const updatedSelectedOptions = [...selectedOptions, answerText];
         setTimeout(async () => {
-          await filterOptionsWithAI(0);
+          await filterOptionsWithAI(0, updatedSelectedOptions);
         }, 100);
       } catch (error) {
         console.error("Error analyzing personality:", error);
@@ -442,8 +448,9 @@ const Index = () => {
     const nextBranchIndex = currentBranchingIndex + 1;
     if (nextBranchIndex < branchingChoices.length) {
       // Update selected options first, then filter
+      const updatedSelectedOptions = [...selectedOptions, selectedOption.text];
       setTimeout(async () => {
-        await filterOptionsWithAI(nextBranchIndex);
+        await filterOptionsWithAI(nextBranchIndex, updatedSelectedOptions);
       }, 100);
     }
 
