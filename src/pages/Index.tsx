@@ -452,7 +452,7 @@ const Index = () => {
         branchIndex: currentBranchingIndex,
         title: filteredBranchingChoices[currentBranchingIndex].title,
         options: filteredBranchingChoices[currentBranchingIndex].options,
-        timeInVideo: currentBranch.timeInVideo,
+        timeInVideo: currentBranch.time,
         journeyPathLength: journeyPath.length,
       },
     ]);
