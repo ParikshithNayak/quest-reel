@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { VideoPlayer, VideoPlayerRef } from "@/components/VideoPlayer";
 import { QuestionModal } from "@/components/QuestionModal";
 import { BranchingModal } from "@/components/BranchingModal";
+import { Button } from "@/components/ui/button";
+import { RotateCcw } from "lucide-react";
 
 /**
  * Personality question shown at the start of the video
@@ -107,6 +109,15 @@ const Index = () => {
 
   // Track selected options for AI filtering
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
+
+  // Track branching history for going back
+  const [branchingHistory, setBranchingHistory] = useState<
+    Array<{
+      branchIndex: number;
+      title: string;
+      options: BranchingChoice["options"];
+    }>
+  >([]);
 
   // Personality questions at the start (customize these)
   const personalityQuestions: PersonalityQuestion[] = [
@@ -432,6 +443,16 @@ const Index = () => {
       filteredBranchingChoices[currentBranchingIndex].options[choiceIndex];
     const currentBranch = branchingChoices[currentBranchingIndex];
 
+    // Add to branching history before making the choice
+    setBranchingHistory((prev) => [
+      ...prev,
+      {
+        branchIndex: currentBranchingIndex,
+        title: filteredBranchingChoices[currentBranchingIndex].title,
+        options: filteredBranchingChoices[currentBranchingIndex].options,
+      },
+    ]);
+
     setJourneyPath((prev) => [
       ...prev,
       {
@@ -514,6 +535,21 @@ const Index = () => {
   };
 
   /**
+   * Handle going back to previous branching question
+   * Shows the last branching modal again without affecting video playback
+   */
+  const handleGoBackToBranching = () => {
+    if (branchingHistory.length > 0) {
+      const lastBranching = branchingHistory[branchingHistory.length - 1];
+      
+      // Set the current branching index and show the modal
+      setCurrentBranchingIndex(lastBranching.branchIndex);
+      setShowBranching(true);
+      videoRef.current?.pause();
+    }
+  };
+
+  /**
    * Handle video end event
    * When a branch video ends, return to the previous video at the specified returnTime
    */
@@ -589,6 +625,17 @@ const Index = () => {
           options={filteredBranchingChoices[currentBranchingIndex].options}
           onChoice={handleBranchChoice}
         />
+      )}
+
+      {/* Go Back Button - Only show if there's branching history and no modal is open */}
+      {branchingHistory.length > 0 && !showQuestion && !showBranching && (
+        <Button
+          onClick={handleGoBackToBranching}
+          className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 rounded-full w-12 h-12 sm:w-14 sm:h-14 shadow-lg hover:shadow-xl transition-all duration-200 bg-primary/90 hover:bg-primary backdrop-blur-sm"
+          size="icon"
+        >
+          <RotateCcw className="h-5 w-5 sm:h-6 sm:w-6" />
+        </Button>
       )}
     </div>
   );
