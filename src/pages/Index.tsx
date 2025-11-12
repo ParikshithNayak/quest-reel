@@ -116,6 +116,8 @@ const Index = () => {
       branchIndex: number;
       title: string;
       options: BranchingChoice["options"];
+      timeInVideo: number;
+      journeyPathLength: number;
     }>
   >([]);
 
@@ -450,6 +452,8 @@ const Index = () => {
         branchIndex: currentBranchingIndex,
         title: filteredBranchingChoices[currentBranchingIndex].title,
         options: filteredBranchingChoices[currentBranchingIndex].options,
+        timeInVideo: currentBranch.timeInVideo,
+        journeyPathLength: journeyPath.length,
       },
     ]);
 
@@ -536,13 +540,22 @@ const Index = () => {
 
   /**
    * Handle going back to previous branching question
-   * Shows the last branching modal again without affecting video playback
+   * Resets progress and shows the branching modal again
    */
   const handleGoBackToBranching = () => {
     if (branchingHistory.length > 0) {
       const lastBranching = branchingHistory[branchingHistory.length - 1];
       
-      // Set the current branching index and show the modal
+      // Remove this branching from history
+      setBranchingHistory((prev) => prev.slice(0, -1));
+      
+      // Reset journey path to before this branching
+      setJourneyPath((prev) => prev.slice(0, lastBranching.journeyPathLength));
+      
+      // Seek video back to the branching point
+      videoRef.current?.seekTo(lastBranching.timeInVideo);
+      
+      // Show the branching modal
       setCurrentBranchingIndex(lastBranching.branchIndex);
       setShowBranching(true);
       videoRef.current?.pause();
@@ -631,10 +644,10 @@ const Index = () => {
       {branchingHistory.length > 0 && !showQuestion && !showBranching && (
         <Button
           onClick={handleGoBackToBranching}
-          className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 rounded-full w-12 h-12 sm:w-14 sm:h-14 shadow-lg hover:shadow-xl transition-all duration-200 bg-primary/90 hover:bg-primary backdrop-blur-sm"
+          className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 rounded-full w-10 h-10 sm:w-12 sm:h-12 shadow-lg hover:shadow-xl transition-all duration-200 bg-primary/90 hover:bg-primary backdrop-blur-sm"
           size="icon"
         >
-          <RotateCcw className="h-5 w-5 sm:h-6 sm:w-6" />
+          <RotateCcw className="h-4 w-4 sm:h-5 sm:w-5" />
         </Button>
       )}
     </div>
