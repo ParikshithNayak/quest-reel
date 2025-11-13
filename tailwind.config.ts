@@ -66,6 +66,11 @@ export default {
         'blur-in': 'blurIn 0.6s ease-out',
         'blur-out': 'blurOut 0.6s ease-out',
         'pulse-glow': 'pulseGlow 2s ease-in-out infinite',
+        'slide-up': 'slideUp 0.6s ease-out',
+        'float': 'float 3s ease-in-out infinite',
+        'draw-line': 'drawLine 2s ease-out forwards',
+        'pulse-slow': 'pulseSlow 4s ease-in-out infinite',
+        'scroll-down': 'scrollDown 1.5s ease-in-out infinite',
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -100,6 +105,27 @@ export default {
         pulseGlow: {
           '0%, 100%': { boxShadow: '0 0 20px hsl(266 85% 58% / 0.3)' },
           '50%': { boxShadow: '0 0 40px hsl(266 85% 58% / 0.6)' },
+        },
+        slideUp: {
+          '0%': { opacity: '0', transform: 'translateY(30px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-20px)' },
+        },
+        drawLine: {
+          '0%': { strokeDasharray: '0, 1000', opacity: '0' },
+          '50%': { opacity: '1' },
+          '100%': { strokeDasharray: '1000, 0', opacity: '1' },
+        },
+        pulseSlow: {
+          '0%, 100%': { opacity: '0.3' },
+          '50%': { opacity: '0.6' },
+        },
+        scrollDown: {
+          '0%': { transform: 'translateY(0)', opacity: '1' },
+          '100%': { transform: 'translateY(16px)', opacity: '0' },
         },
       },
     },

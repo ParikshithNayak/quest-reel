@@ -7,12 +7,15 @@ import Index from "./pages/Index";
 import Completion from "./pages/Completion";
 import NotFound from "./pages/NotFound";
 import HomePage from "./pages/HomePage";
+import Dashboard from "./pages/Dashboard";
+import SplashCursor from "./components/SplashCursor";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
+      <SplashCursor />
       <Toaster />
       <Sonner />
       <BrowserRouter>
@@ -20,6 +23,7 @@ const App = () => (
           <Route path="/" element={<HomePage />} />
           <Route path="/videoplayer" element={<Index />} />
           <Route path="/completion" element={<Completion />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
