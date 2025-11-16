@@ -8,6 +8,7 @@ import Completion from "./pages/Completion";
 import NotFound from "./pages/NotFound";
 import HomePage from "./pages/HomePage";
 import Dashboard from "./pages/Dashboard";
+import Navigation from "./pages/Navigation";
 import SplashCursor from "./components/SplashCursor";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ const App = () => (
           <Route path="/videoplayer" element={<Index />} />
           <Route path="/completion" element={<Completion />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/navigation" element={<Navigation />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

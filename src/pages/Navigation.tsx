@@ -1,4 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { PinContainer } from '@/components/ui/3d-pin';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import Autoplay from 'embla-carousel-autoplay';
+import ComingSoon from '@/components/ComingSoon';
 
 interface NavItem {
   id: string;
@@ -8,31 +13,40 @@ interface NavItem {
 }
 
 const Navigation = () => {
+  const navigate = useNavigate();
   const [activeItem, setActiveItem] = useState('item1');
   const [isLoaded, setIsLoaded] = useState(false);
+  const autoplayRef = useRef(Autoplay({ delay: 3000, stopOnInteraction: false, stopOnMouseEnter: true }));
 
   const navItems: NavItem[] = [
-    { id: 'item1', title: 'Sony Pictures', image: 'https://logos-world.net/wp-content/uploads/2020/05/Sony-Pictures-Logo.png', content: 'Sony Pictures Entertainment - Creating and distributing motion pictures, television programming and other entertainment content worldwide.' },
-    { id: 'item2', title: 'Sony Music', image: 'https://logos-world.net/wp-content/uploads/2020/05/Sony-Music-Logo.png', content: 'Sony Music Entertainment - One of the largest music companies in the world, home to countless artists and iconic music labels.' },
-    { id: 'item3', title: 'PlayStation', image: 'https://logos-world.net/wp-content/uploads/2020/05/PlayStation-Logo.png', content: 'PlayStation - Leading gaming brand delivering innovative gaming experiences through consoles, games, and services.' }
+    { id: 'item1', title: 'Sony Pictures', image: '/logos/NavLogo1.png', content: 'Sony Pictures Entertainment - Creating and distributing motion pictures, television programming and other entertainment content worldwide.' },
+    { id: 'item2', title: 'Sony Music', image: '/logos/NavLogo2.png', content: 'Sony Music Entertainment - One of the largest music companies in the world, home to countless artists and iconic music labels.' },
+    { id: 'item3', title: 'PlayStation', image: '/logos/NavLogo3.png', content: 'PlayStation - Leading gaming brand delivering innovative gaming experiences through consoles, games, and services.' },
+    { id: 'item4', title: 'Sony WonderPark', image: '/logos/NavLogo4.png', content: 'Sony WonderPark - An immersive entertainment destination bringing stories to life through innovative experiences.' }
   ];
 
   const activeContent = navItems.find(item => item.id === activeItem)?.content;
 
   useEffect(() => {
     setIsLoaded(true);
+    
+    return () => {
+      if (autoplayRef.current) {
+        autoplayRef.current.destroy();
+      }
+    };
   }, []);
 
   return (
-    <div className="w-full h-screen bg-gradient-to-br from-background via-background to-background/80 flex relative overflow-hidden">
+    <div className="w-full min-h-screen bg-gradient-to-br from-background via-background to-background/80 flex flex-col md:flex-row relative overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl animate-pulse" />
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-accent/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
       </div>
 
-      {/* Left Sidebar */}
-      <div className="w-80 p-6 border-r border-border/50 backdrop-blur-sm relative z-10">
+      {/* Left Sidebar - Desktop */}
+      <div className="hidden md:block w-80 h-screen p-6 border-r border-border/50 backdrop-blur-sm relative z-10 flex-shrink-0">
         <div className={`h-full flex flex-col gap-3 transition-all duration-1000 ${
           isLoaded ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0'
         }`}>
@@ -75,34 +89,87 @@ const Navigation = () => {
         </div>
       </div>
 
+      {/* Mobile Navigation */}
+      <div className="md:hidden w-full p-4 border-b border-border/50 backdrop-blur-sm relative z-10">
+        <div className="flex gap-2 overflow-x-auto pb-2">
+          {navItems.map((item) => (
+            <button
+              key={item.id}
+              className={`px-4 py-2 rounded-lg whitespace-nowrap transition-all duration-300 ${
+                activeItem === item.id
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-card/50 hover:bg-card'
+              }`}
+              onClick={() => setActiveItem(item.id)}
+            >
+              {item.title}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Main Content Area */}
-      <div className="flex-1 p-8 relative z-10">
-        <div className={`h-full bg-card/30 backdrop-blur-xl border border-border/30 rounded-2xl p-8 shadow-2xl transition-all duration-700 ${
+      <div className="flex-1 min-h-screen md:h-screen p-4 md:p-8 relative z-10 overflow-y-auto md:overflow-hidden">
+        <div className={`h-full bg-card/30 backdrop-blur-xl border border-border/30 rounded-2xl p-4 md:p-8 shadow-2xl transition-all duration-700 flex flex-col overflow-visible ${
           isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
         }`}>
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          <div className="mb-4">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               {navItems.find(item => item.id === activeItem)?.title}
             </h1>
           </div>
           
           {/* Content */}
-          <div>
-            <p className="text-muted-foreground text-lg leading-relaxed animate-fade-in">
+          <div className="mb-4">
+            <p className="text-muted-foreground text-base leading-relaxed animate-fade-in">
               {activeContent}
             </p>
           </div>
           
-          {/* Stats Cards */}
-          <div className="grid grid-cols-3 gap-4 mt-8">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-card/50 backdrop-blur-sm border border-border/30 rounded-lg p-4 hover:scale-105 transition-transform duration-300">
-                <div className="text-2xl font-bold text-primary">{i * 42}</div>
-                <div className="text-sm text-muted-foreground">Metric {i}</div>
-              </div>
-            ))}
-          </div>
+          {/* Sony Pictures 3D Pins Carousel */}
+          {activeItem === 'item1' && (
+            <div className="flex-1 flex items-center justify-center overflow-visible">
+              <Carousel 
+                className="w-full max-w-4xl"
+                opts={{ loop: true }}
+                plugins={[autoplayRef.current]}
+              >
+                <CarouselContent className="-ml-4">
+                  {[
+                    { title: "The Spider Within: A Spider-Verse Story", image: "https://m.media-amazon.com/images/M/MV5BMjgyNDhlZmItYWRlNi00Y2NmLWFmYTgtZWJkYWE3M2IyZmVkXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg" },
+                    { title: "Spider-Man: Across the Spider-Verse", image: "https://image.tmdb.org/t/p/w500/8Vt6mWEReuy4Of61Lnj5Xj704m8.jpg" },
+                    { title: "Skyfall", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS3QjxC_sCvc7IixN0MjBoiflaEXbQMhtiS3_B55DFFX28_qvwAfNn9fkcsaUshdibolXaZpA&s=10" },
+                    { title: "Venom: Let There Be Carnage", image: "https://image.tmdb.org/t/p/w500/rjkmN1dniUHVYAtwuV3Tji7FsDO.jpg" },
+                    { title: "Jumanji", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQsDhg4E9M91oy7j_TCUukcaRvMmkYUz7rIh0yitZ756YUCDl2Xl7D94QB0hWXI-GBT5QEF&s=10" },
+                    { title: "Uncharted", image: "https://alumni.risd.edu/sites/default/files/2022-06/Uncharted_web.jpg" }
+                  ].map((movie, index) => (
+                    <CarouselItem key={index} className="pl-4 md:basis-1/2 lg:basis-1/3">
+                      <div className="flex items-center justify-center py-20">
+                        <PinContainer
+                          title={index === 0 ? "Play Now" : "Coming Soon ..."}
+                          href={index === 0 ? "/videoplayer" : undefined}
+                        >
+                          <div className="w-[200px]">
+                            <img 
+                              src={movie.image} 
+                              alt={movie.title}
+                              className="w-full h-[280px] object-cover rounded-lg"
+                            />
+                          </div>
+                        </PinContainer>
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious />
+                <CarouselNext />
+              </Carousel>
+            </div>
+          )}
+          
+          {/* Coming Soon for Sony Music, PlayStation and WonderPark */}
+          {(activeItem === 'item2' || activeItem === 'item3' || activeItem === 'item4') && <ComingSoon />}
         </div>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Play, Headphones, User } from 'lucide-react';
+import { Sparkles, Headphones, User, LayoutDashboard } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 import SphereImageGrid, { ImageData } from '@/components/SphereImageGrid';
 import TextType from '@/components/TextType';
@@ -9,7 +9,11 @@ export default function HomePage() {
   const navigate = useNavigate();
 
   const handleStart = () => {
-    navigate('/videoplayer')
+    navigate('/navigation')
+  }
+
+  const handleDashboard = () => {
+    navigate('/dashboard')
   }
 
   const BASE_IMAGES: Omit<ImageData, 'id'>[] = [
@@ -35,7 +39,7 @@ export default function HomePage() {
   ];
 
   const sonyMovies: ImageData[] = [];
-  for (let i = 0; i < 210; i++) {
+  for (let i = 0; i < 150; i++) {
     const baseIndex = i % BASE_IMAGES.length;
     const baseImage = BASE_IMAGES[baseIndex];
     sonyMovies.push({ id: `movie-${i + 1}`, ...baseImage });
@@ -47,26 +51,19 @@ export default function HomePage() {
       
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iZ3JpZCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDQwIDAgTCAwIDAgMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDMpIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-30" />
 
-      {/* Header Navigation */}
-      <header className="absolute top-0 left-0 right-0 z-30 px-6 py-4 md:px-8 md:py-6">
-        <div className="flex items-center justify-end">
-          {/* Logo */}
-          {/* <img 
-            src="/logos/TransparentSideBySideRealInReelLogo.png" 
-            alt="Sony x Real in Reel" 
-            className="h-8 md:h-10 w-auto mr-4"
-          /> */}
+      {/* Login Button - Top Right */}
+      <div className="absolute top-6 right-14 z-30">
+        <Button
+          size="sm"
+          variant="outline"
+          className="group transition-all duration-300 hover:scale-105"
+        >
+          <User className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-300" />
+          Log In / Sign Up
+        </Button>
+      </div>
 
-          {/* Auth Button */}
-          <Button 
-            size="sm"
-            className="bg-primary hover:bg-primary/90"
-          >
-            <User className="w-4 h-4 mr-0.5" />
-            Log In / Sign Up
-          </Button>
-        </div>
-      </header>
+
 
       {/* Mobile Layout */}
       <div className="relative z-10 flex flex-col min-h-screen md:hidden pt-16">
@@ -111,11 +108,21 @@ export default function HomePage() {
           <Button
             size="lg"
             onClick={handleStart}
-            className="w-full max-w-xs mx-auto h-12 sm:h-14 text-base sm:text-lg group"
+            className="w-full max-w-xs mx-auto h-12 sm:h-14 text-base sm:text-lg group transition-all duration-300 hover:scale-105"
             data-testid="button-start"
           >
-            <Play className="w-4 h-4 sm:w-5 sm:h-5 mr-2 group-hover:scale-110 transition-transform" />
-            Begin Your Story
+            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 mr-2 group-hover:scale-110 transition-transform duration-300" />
+            Explore Creativity
+          </Button>
+
+          <Button
+            size="sm"
+            onClick={handleDashboard}
+            variant="outline"
+            className="w-full max-w-xs mx-auto text-sm group transition-all duration-300 hover:scale-105"
+          >
+            <LayoutDashboard className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-300" />
+            Go to Dashboard
           </Button>
 
           <div className="flex items-center justify-center gap-2 text-muted-foreground pt-2">
@@ -154,13 +161,22 @@ export default function HomePage() {
 
               <div className="flex flex-col gap-6 items-end pt-4">
                 <Button
-                  size="lg"
+                  size="sm"
                   onClick={handleStart}
-                  className="w-64 h-16 text-xl group"
+                  className="w-48 text-sm group transition-all duration-300 hover:scale-105"
                   data-testid="button-start"
                 >
-                  <Play className="w-6 h-6 mr-2 group-hover:scale-110 transition-transform" />
-                  Begin Your Story
+                  <Sparkles className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-300" />
+                  Explore Creativity
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleDashboard}
+                  variant="outline"
+                  className="w-48 text-sm group transition-all duration-300 hover:scale-105"
+                >
+                  <LayoutDashboard className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-300" />
+                  Go to Dashboard
                 </Button>
               </div>
 
