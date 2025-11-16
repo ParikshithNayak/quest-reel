@@ -234,8 +234,11 @@ const Dashboard = () => {
               <Settings className="h-8 w-8 text-primary" />
               Production Dashboard
             </h1>
-            <p className="text-muted-foreground mt-1">
+            {/* <p className="text-muted-foreground mt-1">
               Manage interactive story elements and approvals
+            </p> */}
+            <p className="text-muted-foreground mt-1">
+              A sneak peek into a sample production dashboard page to manage approvals from directors and producers on which branching points and videos to be used. The real dashboard needs special access.
             </p>
           </div>
           <Button className="bg-gradient-primary">

@@ -208,7 +208,7 @@ const SphereImageGrid: React.FC<SphereImageGridProps> = ({
     const dx = x - lastMousePos.current.x;
     const dy = y - lastMousePos.current.y;
 
-    const delta = { x: -dy * dragSensitivity, y: dx * dragSensitivity };
+    const delta = { x: -dy * dragSensitivity, y: -dx * dragSensitivity };
 
     setRotation(prev => ({
       x: SPHERE_MATH.normalizeAngle(prev.x + clampSpeed(delta.x)),
