@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/videoplayer(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
