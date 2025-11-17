@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-const ComingSoon = () => {
+const StayTuned = () => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -30,7 +30,7 @@ const ComingSoon = () => {
         {/* Title */}
         <div className="space-y-4">
           <h2 className="text-6xl font-light tracking-wider text-foreground/90">
-            Coming Soon
+            Stay Tuned
           </h2>
           <div className="h-px w-32 mx-auto bg-gradient-to-r from-transparent via-primary to-transparent" />
         </div>
@@ -85,4 +85,4 @@ const ComingSoon = () => {
   );
 };
 
-export default ComingSoon;
+export default StayTuned;

@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PinContainer } from '@/components/ui/3d-pin';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import Autoplay from 'embla-carousel-autoplay';
-import ComingSoon from '@/components/ComingSoon';
+import SonyPicturesCarousel from '@/components/SonyPicturesCarousel';
+import SonyMusicCarousel from '@/components/SonyMusicCarousel';
+import PlayStationCarousel from '@/components/PlayStationCarousel';
+import StayTuned from '@/components/StayTuned';
 
 interface NavItem {
   id: string;
@@ -16,7 +16,6 @@ const Navigation = () => {
   const navigate = useNavigate();
   const [activeItem, setActiveItem] = useState('item1');
   const [isLoaded, setIsLoaded] = useState(false);
-  const autoplayRef = useRef(Autoplay({ delay: 3000, stopOnInteraction: false, stopOnMouseEnter: true }));
 
   const navItems: NavItem[] = [
     { id: 'item1', title: 'Sony Pictures', image: '/logos/NavLogo1.png', content: 'Sony Pictures Entertainment - Creating and distributing motion pictures, television programming and other entertainment content worldwide.' },
@@ -29,12 +28,6 @@ const Navigation = () => {
 
   useEffect(() => {
     setIsLoaded(true);
-    
-    return () => {
-      if (autoplayRef.current) {
-        autoplayRef.current.destroy();
-      }
-    };
   }, []);
 
   return (
@@ -127,49 +120,17 @@ const Navigation = () => {
             </p>
           </div>
           
-          {/* Sony Pictures 3D Pins Carousel */}
-          {activeItem === 'item1' && (
-            <div className="flex-1 flex items-center justify-center overflow-visible">
-              <Carousel 
-                className="w-full max-w-4xl"
-                opts={{ loop: true }}
-                plugins={[autoplayRef.current]}
-              >
-                <CarouselContent className="-ml-4">
-                  {[
-                    { title: "The Spider Within: A Spider-Verse Story", image: "https://m.media-amazon.com/images/M/MV5BMjgyNDhlZmItYWRlNi00Y2NmLWFmYTgtZWJkYWE3M2IyZmVkXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg" },
-                    { title: "Spider-Man: Across the Spider-Verse", image: "https://image.tmdb.org/t/p/w500/8Vt6mWEReuy4Of61Lnj5Xj704m8.jpg" },
-                    { title: "Skyfall", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS3QjxC_sCvc7IixN0MjBoiflaEXbQMhtiS3_B55DFFX28_qvwAfNn9fkcsaUshdibolXaZpA&s=10" },
-                    { title: "Venom: Let There Be Carnage", image: "https://image.tmdb.org/t/p/w500/rjkmN1dniUHVYAtwuV3Tji7FsDO.jpg" },
-                    { title: "Jumanji", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQsDhg4E9M91oy7j_TCUukcaRvMmkYUz7rIh0yitZ756YUCDl2Xl7D94QB0hWXI-GBT5QEF&s=10" },
-                    { title: "Uncharted", image: "https://alumni.risd.edu/sites/default/files/2022-06/Uncharted_web.jpg" }
-                  ].map((movie, index) => (
-                    <CarouselItem key={index} className="pl-4 md:basis-1/2 lg:basis-1/3">
-                      <div className="flex items-center justify-center py-20">
-                        <PinContainer
-                          title={index === 0 ? "Play Now" : "Coming Soon ..."}
-                          href={index === 0 ? "/videoplayer" : undefined}
-                        >
-                          <div className="w-[200px]">
-                            <img 
-                              src={movie.image} 
-                              alt={movie.title}
-                              className="w-full h-[280px] object-cover rounded-lg"
-                            />
-                          </div>
-                        </PinContainer>
-                      </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                <CarouselPrevious />
-                <CarouselNext />
-              </Carousel>
-            </div>
-          )}
+          {/* Sony Pictures Carousel */}
+          {activeItem === 'item1' && <SonyPicturesCarousel />}
           
-          {/* Coming Soon for Sony Music, PlayStation and WonderPark */}
-          {(activeItem === 'item2' || activeItem === 'item3' || activeItem === 'item4') && <ComingSoon />}
+          {/* Sony Music Carousel */}
+          {activeItem === 'item2' && <SonyMusicCarousel />}
+          
+          {/* PlayStation Carousel */}
+          {activeItem === 'item3' && <PlayStationCarousel />}
+          
+          {/* Stay Tuned for WonderPark */}
+          {activeItem === 'item4' && <StayTuned />}
         </div>
       </div>
     </div>
