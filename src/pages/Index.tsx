@@ -118,6 +118,7 @@ const Index = () => {
       options: BranchingChoice["options"];
       timeInVideo: number;
       journeyPathLength: number;
+      selectedOptionsLength: number;
     }>
   >([]);
 
@@ -454,6 +455,7 @@ const Index = () => {
         options: filteredBranchingChoices[currentBranchingIndex].options,
         timeInVideo: currentBranch.time,
         journeyPathLength: journeyPath.length,
+        selectedOptionsLength: selectedOptions.length,
       },
     ]);
 
@@ -552,13 +554,30 @@ const Index = () => {
       // Reset journey path to before this branching
       setJourneyPath((prev) => prev.slice(0, lastBranching.journeyPathLength));
       
-      // Seek video back to the branching point
-      videoRef.current?.seekTo(lastBranching.timeInVideo);
+      // Reset selected options to before this branching choice
+      setSelectedOptions((prev) => prev.slice(0, lastBranching.selectedOptionsLength));
       
-      // Show the branching modal
-      setCurrentBranchingIndex(lastBranching.branchIndex);
-      setShowBranching(true);
-      videoRef.current?.pause();
+      // Clear video stack (return to main video)
+      setVideoStack([]);
+      
+      // Clear pending branch switch
+      setPendingBranchSwitch(null);
+      
+      // Clear current branching choice
+      setCurrentBranchingChoice(null);
+      
+      // Return to main video
+      setVideoUrl("https://real-in-reel-general-poc.s3.ap-south-1.amazonaws.com/demo_3_main_compressed.mp4");
+      
+      // Seek video back to the branching point
+      setTimeout(() => {
+        videoRef.current?.seekTo(lastBranching.timeInVideo);
+        
+        // Show the branching modal
+        setCurrentBranchingIndex(lastBranching.branchIndex);
+        setShowBranching(true);
+        videoRef.current?.pause();
+      }, 100);
     }
   };
 
@@ -614,8 +633,7 @@ const Index = () => {
         onVideoEnded={handleVideoEnded}
         isBlurred={showQuestion || showBranching}
         allowSeeking={
-          personalityAnswers.length === personalityQuestions.length &&
-          videoStack.length === 0
+          personalityAnswers.length === personalityQuestions.length
         }
       />
 
