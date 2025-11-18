@@ -614,7 +614,11 @@ const Index = () => {
         videoRef.current?.seekTo(resumeTime);
         videoRef.current?.play();
       }, 100);
-    } else if (videoStack.length === 0) {
+    } else if (
+      videoStack.length === 0 &&
+      personalityAnswers.length === personalityQuestions.length
+    ) {
+      // Main video has ended and all personality questions are answered
       navigate("/completion", {
         state: {
           personalityAnswers,
