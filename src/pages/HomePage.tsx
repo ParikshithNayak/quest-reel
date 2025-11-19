@@ -92,11 +92,11 @@ export default function HomePage() {
             className="h-12 sm:h-14 w-auto mx-auto mb-6"
           />
           <div className="space-y-2">
-            <h1 className="text-3xl sm:text-4xl font-display tracking-tight text-foreground">
-              Interactive
+            <h1 className="text-2xl sm:text-3xl font-display tracking-tight text-foreground">
+              SONY's
             </h1>
-            <h2 className="text-3xl sm:text-4xl font-display tracking-tight bg-gradient-to-r from-primary via-cyan-500 to-purple-500 bg-clip-text text-transparent">
-              Film Experience
+            <h2 className="text-2xl sm:text-3xl font-display tracking-tight bg-gradient-to-r from-primary via-cyan-500 to-purple-500 bg-clip-text text-transparent">
+              Interactive Platform
             </h2>
           </div>
 
@@ -146,11 +146,11 @@ export default function HomePage() {
                 className="h-16 md:h-20 w-auto ml-auto mb-0"
               />
               <div className="space-y-4">
-                <h1 className="text-5xl md:text-6xl lg:text-7xl font-display tracking-tight text-foreground">
-                  Interactive
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-display tracking-tight text-foreground">
+                  SONY's
                 </h1>
-                <h2 className="text-5xl md:text-6xl lg:text-7xl font-display tracking-tight bg-gradient-to-r from-primary via-cyan-500 to-purple-500 bg-clip-text text-transparent">
-                  Film Experience
+                <h2 className="text-4xl md:text-5xl lg:text-6xl font-display tracking-tight bg-gradient-to-r from-primary via-cyan-500 to-purple-500 bg-clip-text text-transparent whitespace-nowrap">
+                  Interactive Platform
                 </h2>
               </div>
 
