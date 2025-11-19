@@ -223,12 +223,16 @@ const Index = () => {
   /**
    * Call AI API to filter and rephrase branching options for a specific question
    */
-  const filterOptionsWithAI = async (branchIndex: number, currentSelectedOptions?: string[]) => {
+  const filterOptionsWithAI = async (
+    branchIndex: number,
+    currentSelectedOptions?: string[]
+  ) => {
     try {
       const branch = branchingChoices[branchIndex];
       const availableOptions = branch.options.map((option) => ({
         id: `opt_${option.id}`,
         text: option.text,
+        tags: option?.tags,
       }));
 
       // Store first and rest options separately
@@ -547,32 +551,36 @@ const Index = () => {
   const handleGoBackToBranching = () => {
     if (branchingHistory.length > 0) {
       const lastBranching = branchingHistory[branchingHistory.length - 1];
-      
+
       // Remove this branching from history
       setBranchingHistory((prev) => prev.slice(0, -1));
-      
+
       // Reset journey path to before this branching
       setJourneyPath((prev) => prev.slice(0, lastBranching.journeyPathLength));
-      
+
       // Reset selected options to before this branching choice
-      setSelectedOptions((prev) => prev.slice(0, lastBranching.selectedOptionsLength));
-      
+      setSelectedOptions((prev) =>
+        prev.slice(0, lastBranching.selectedOptionsLength)
+      );
+
       // Clear video stack (return to main video)
       setVideoStack([]);
-      
+
       // Clear pending branch switch
       setPendingBranchSwitch(null);
-      
+
       // Clear current branching choice
       setCurrentBranchingChoice(null);
-      
+
       // Return to main video
-      setVideoUrl("https://real-in-reel-general-poc.s3.ap-south-1.amazonaws.com/demo_3_main_compressed.mp4");
-      
+      setVideoUrl(
+        "https://real-in-reel-general-poc.s3.ap-south-1.amazonaws.com/demo_3_main_compressed.mp4"
+      );
+
       // Seek video back to the branching point
       setTimeout(() => {
         videoRef.current?.seekTo(lastBranching.timeInVideo);
-        
+
         // Show the branching modal
         setCurrentBranchingIndex(lastBranching.branchIndex);
         setShowBranching(true);
@@ -636,9 +644,7 @@ const Index = () => {
         onTimeUpdate={handleTimeUpdate}
         onVideoEnded={handleVideoEnded}
         isBlurred={showQuestion || showBranching}
-        allowSeeking={
-          personalityAnswers.length === personalityQuestions.length
-        }
+        allowSeeking={personalityAnswers.length === personalityQuestions.length}
       />
 
       {showQuestion && (
